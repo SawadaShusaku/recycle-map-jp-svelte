@@ -25,18 +25,18 @@
 - [x] 3.4 各エントリに日付・タイトル・説明を記載する
 - [x] 3.5 `/static/decorations/*.svg` から装飾SVGを組み込む
 - [x] 3.6 地図に戻るリンクを設置する
-- [ ] 3.7 `jj describe` で更新情報ページ実装をコミット記述する
+- [x] 3.7 `jj describe` で更新情報ページ実装をコミット記述する
 
 ## 4. プライバシーポリシーページ（/privacy-policy）
 
-- [ ] 4.1 `src/routes/privacy-policy/+page.svelte` を新規作成する
-- [ ] 4.2 ページタイトル・メタ説明を設定する（`buildPageTitle('プライバシーポリシー')`）
-- [ ] 4.3 位置情報（Geolocation API）の利用に関するセクションを記述する
-- [ ] 4.4 localStorage（表示設定保存）の利用に関するセクションを記述する
-- [ ] 4.5 外部サービス（OpenFreeMap・Mapillary・OSRM）へのリクエストに関するセクションを記述する
-- [ ] 4.6 個人情報の非収集・無アナリティクス・無追跡クッキーを明記するセクションを記述する
-- [ ] 4.7 `/static/decorations/*.svg` から装飾SVGを組み込む
-- [ ] 4.8 地図に戻るリンクを設置する
+- [x] 4.1 `src/routes/privacy-policy/+page.svelte` を新規作成する
+- [x] 4.2 ページタイトル・メタ説明を設定する（`buildPageTitle('プライバシーポリシー')`）
+- [x] 4.3 位置情報（Geolocation API）の利用に関するセクションを記述する
+- [x] 4.4 localStorage（表示設定保存）の利用に関するセクションを記述する
+- [x] 4.5 外部サービス（OpenFreeMap・Mapillary・OSRM）へのリクエストに関するセクションを記述する
+- [x] 4.6 個人情報の非収集・無アナリティクス・無追跡クッキーを明記するセクションを記述する
+- [x] 4.7 `/static/decorations/*.svg` から装飾SVGを組み込む
+- [x] 4.8 地図に戻るリンクを設置する
 - [ ] 4.9 `jj describe` でプライバシーポリシーページ実装をコミット記述する
 
 ## 5. 使い方ページ（/usage）のUIデコレーション刷新
