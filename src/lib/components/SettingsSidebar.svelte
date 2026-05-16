@@ -74,22 +74,20 @@
     {
       id: 'marker' as Section,
       label: 'マーカーデザイン',
-      sub: '同心円・単色・グラデーション',
       icon: Palette,
     },
     {
       id: 'fonts' as Section,
       label: 'フォント設定',
-      sub: 'ロゴ・ポップアップ・UI',
       icon: Type,
     },
   ];
 
   const infoMenuItems: InfoMenuItem[] = [
-    { label: '使い方', href: '/usage', icon: HelpCircle, accent: true },
-    { label: 'データについて', icon: FileText },
-    { label: '更新情報', icon: Sparkles },
-    { label: 'プライバシーポリシー', icon: ShieldCheck },
+    { label: '使い方', href: '/usage', icon: HelpCircle },
+    { label: 'データについて', href: '/about-data', icon: FileText },
+    { label: '更新情報', href: '/updates', icon: Sparkles },
+    { label: 'プライバシーポリシー', href: '/privacy-policy', icon: ShieldCheck },
   ];
 
   function handleStyleChange(style: MarkerStyle) {
@@ -157,24 +155,7 @@
     <div class="refined-sidebar__body">
       {#if currentSection === 'home'}
         <section class="refined-section">
-          <h3 class="refined-section__title">表示設定</h3>
-          {#each settingSections as sec}
-            {@const Icon = sec.icon}
-            <button class="refined-list-row" onclick={() => goSection(sec.id)}>
-              <span class="refined-list-row__icon">
-                <Icon size={18} />
-              </span>
-              <div class="refined-list-row__main">
-                <p class="refined-list-row__label">{sec.label}</p>
-                <p class="refined-list-row__sub">{sec.sub}</p>
-              </div>
-              <ChevronRight class="refined-list-row__chev" size={16} />
-            </button>
-          {/each}
-        </section>
-
-        <section class="refined-section">
-          <h3 class="refined-section__title">情報・ヘルプ</h3>
+          <h3 class="refined-section__title">ヘルプ</h3>
           {#each infoMenuItems as item}
             {@const Icon = item.icon}
             {@const available = Boolean(item.href)}
@@ -185,9 +166,7 @@
                 rel={item.external ? 'noopener noreferrer' : undefined}
                 class="refined-list-row"
               >
-                <span
-                  class="refined-list-row__icon {item.accent ? 'refined-list-row__icon--accent' : ''}"
-                >
+                <span class="refined-list-row__icon">
                   <Icon size={18} />
                 </span>
                 <div class="refined-list-row__main">
@@ -215,9 +194,25 @@
           {/each}
         </section>
 
+        <section class="refined-section">
+          <h3 class="refined-section__title">表示設定</h3>
+          {#each settingSections as sec}
+            {@const Icon = sec.icon}
+            <button class="refined-list-row" onclick={() => goSection(sec.id)}>
+              <span class="refined-list-row__icon">
+                <Icon size={18} />
+              </span>
+              <div class="refined-list-row__main">
+                <p class="refined-list-row__label">{sec.label}</p>
+              </div>
+              <ChevronRight class="refined-list-row__chev" size={16} />
+            </button>
+          {/each}
+        </section>
+
       {:else if currentSection === 'marker'}
         <button class="refined-back" onclick={goHome}>
-          <ChevronLeft size={16} />
+          <ChevronLeft size={20} />
           戻る
         </button>
         <h3 class="refined-detail-title">マーカーデザイン</h3>
@@ -258,7 +253,7 @@
 
       {:else if currentSection === 'fonts'}
         <button class="refined-back" onclick={goHome}>
-          <ChevronLeft size={16} />
+          <ChevronLeft size={20} />
           戻る
         </button>
         <h3 class="refined-detail-title">フォント設定</h3>
@@ -377,10 +372,10 @@
   .refined-section { margin-bottom: 22px; }
   .refined-section:last-child { margin-bottom: 0; }
   .refined-section__title {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.12em;
-    color: #6b7480;
+    color: #374151;
     text-transform: uppercase;
     margin: 0 8px 10px;
   }
@@ -424,10 +419,7 @@
     width: 20px;
     height: 20px;
   }
-  .refined-list-row__icon--accent {
-    background: #ecfdf5;
-    color: #00766f;
-  }
+
   .refined-list-row__main {
     flex: 1;
     min-width: 0;
@@ -461,14 +453,14 @@
   .refined-back {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     background: transparent;
     border: 0;
     color: #6b7480;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    padding: 4px 6px;
+    padding: 6px 8px;
     border-radius: 8px;
     margin-bottom: 8px;
     transition: color 0.15s ease, background 0.15s ease;

@@ -2,12 +2,21 @@
   /**
    * ウェーブ（波線）やジグザグなどのライン装飾コンポーネント
    */
-  export let size: number = 150;
-  export let color: string = "#FFD180"; // パステルオレンジ
-  export let strokeWidth: number = 8;
-  export let variant: "wave" | "squiggle" | "line" = "wave";
-  export let opacity: number = 0.9;
-  export let className: string = "";
+  let {
+    size = 150,
+    color = "#FFD180",
+    strokeWidth = 8,
+    variant = "wave",
+    opacity = 0.9,
+    className = "",
+  } = $props<{
+    size?: number;
+    color?: string;
+    strokeWidth?: number;
+    variant?: "wave" | "squiggle" | "line";
+    opacity?: number;
+    className?: string;
+  }>();
 </script>
 
 <svg 

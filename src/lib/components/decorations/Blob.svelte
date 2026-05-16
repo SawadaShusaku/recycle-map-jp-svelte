@@ -2,12 +2,21 @@
   /**
    * 抽象的なグラデーションの形（Blob）を表現するUI装飾コンポーネント
    */
-  export let size: number = 200;
-  export let color1: string = "#FFB8D2"; // デフォルト：パステルピンク
-  export let color2: string = "#C1C5FF"; // デフォルト：パステルパープル
-  export let type: 1 | 2 | 3 = 1; // 形状のパターン
-  export let opacity: number = 0.8;
-  export let className: string = "";
+  let {
+    size = 200,
+    color1 = "#FFB8D2",
+    color2 = "#C1C5FF",
+    type = 1,
+    opacity = 0.8,
+    className = "",
+  } = $props<{
+    size?: number;
+    color1?: string;
+    color2?: string;
+    type?: 1 | 2 | 3;
+    opacity?: number;
+    className?: string;
+  }>();
 
   // Blobの形状パターン
   const paths = {
@@ -33,5 +42,5 @@
       <stop offset="100%" stop-color={color2} />
     </linearGradient>
   </defs>
-  <path d={paths[type]} fill="url(#blob-grad-{id})" />
+  <path d={paths[type as 1 | 2 | 3]} fill="url(#blob-grad-{id})" />
 </svg>

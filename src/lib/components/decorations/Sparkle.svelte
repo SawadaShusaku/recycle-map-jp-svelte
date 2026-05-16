@@ -2,12 +2,21 @@
   /**
    * キラキラ・スターバーストのUI装飾コンポーネント
    */
-  export let size: number = 100;
-  export let color: string = "#AEE1FF"; // パステルブルー
-  export let variant: "star" | "asterisk" = "star";
-  export let strokeWidth: number = 15;
-  export let opacity: number = 0.9;
-  export let className: string = "";
+  let {
+    size = 100,
+    color = "#AEE1FF",
+    variant = "star",
+    strokeWidth = 15,
+    opacity = 0.9,
+    className = "",
+  } = $props<{
+    size?: number;
+    color?: string;
+    variant?: "star" | "asterisk";
+    strokeWidth?: number;
+    opacity?: number;
+    className?: string;
+  }>();
 </script>
 
 <svg 

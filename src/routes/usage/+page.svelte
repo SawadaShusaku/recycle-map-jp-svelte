@@ -66,86 +66,120 @@
 </script>
 
 <div class="min-h-screen bg-[#f7f7f2] text-stone-800">
-  <div class="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
+  <div class="mx-auto flex w-full max-w-4xl lg:max-w-5xl xl:max-w-6xl flex-col gap-12 px-8 py-12 sm:px-12 sm:py-16">
     <a
       href="/"
-      class="inline-flex w-fit items-center gap-2 rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-bold text-stone-700 transition-colors hover:bg-stone-50"
+      onclick={() => sessionStorage.setItem('openSidebar', '1')}
+      class="group relative z-10 inline-flex w-fit items-center gap-2"
     >
-      <span aria-hidden="true">‹</span>
-      地図に戻る
+      <svg
+        class="h-7 w-7 text-stone-400 transition-colors group-hover:text-stone-800"
+        viewBox="0 0 60 60"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M 40 15 L 25 30 L 40 45" />
+        <path d="M 25 15 L 10 30 L 25 45" />
+      </svg>
+      <span class="text-xl font-bold text-stone-600 transition-colors group-hover:text-stone-900">戻る</span>
     </a>
 
-    <section class="border-b border-stone-300 pb-6">
-      <p class="text-xs font-bold tracking-[0.18em] text-stone-500">GUIDE</p>
-      <h1 class="mt-2 text-3xl font-black tracking-tight text-stone-900 sm:text-4xl">使い方</h1>
-      <p class="mt-4 text-sm leading-8 text-stone-600 sm:text-base">
-        {SITE_NAME_JA}は、区ごとに異なる回収拠点を地図上で探すためのアプリです。
-        まず区を選び、必要に応じてカテゴリで絞り込むと、持ち込み先を見つけやすくなります。
-      </p>
+    <section class="relative border-b border-stone-300 pb-10">
+      <img
+        src="/decorations/blob_green_blue.svg"
+        alt=""
+        aria-hidden="true"
+        class="pointer-events-none absolute z-[1] opacity-[0.90] -right-16 -top-12 h-56 w-56 sm:-right-36 sm:-top-28 sm:h-80 sm:w-80"
+      />
+      <div class="relative z-10">
+        <p class="text-xs font-bold tracking-[0.18em] text-stone-500">GUIDE</p>
+        <h1 class="mt-2 text-3xl font-black tracking-tight text-stone-900 sm:text-4xl">使い方</h1>
+        <p class="mt-6 text-base leading-8 text-stone-600 sm:text-lg">
+          {SITE_NAME_JA}は、区ごとに異なる回収拠点を地図上で探すためのアプリです。
+          まず区を選び、必要に応じてカテゴリで絞り込むと、持ち込み先を見つけやすくなります。
+        </p>
+      </div>
     </section>
 
-    <section class="rounded-3xl border border-[#d8d3c7] bg-[#fffdf8] p-5 sm:p-6">
-      <h2 class="text-xl font-black leading-tight text-stone-900 sm:text-2xl">ご利用前の確認</h2>
-      <ul class="mt-4 space-y-3 text-base leading-8 text-stone-800 sm:mt-5 sm:text-lg">
-        {#each cautions as caution}
-          <li class="flex gap-3">
-            <span class="mt-3 h-1.5 w-1.5 flex-none rounded-full bg-stone-500"></span>
-            <span>{caution}</span>
-          </li>
-        {/each}
-      </ul>
+    <section class="rounded-3xl border border-[#d8d3c7] bg-[#fffdf8] p-10 sm:p-12">
+      <div class="flex items-start gap-3">
+        <img
+          src="/decorations/sparkle_asterisk.svg"
+          alt=""
+          aria-hidden="true"
+          class="mt-1.5 h-5 w-5 shrink-0"
+        />
+        <div>
+          <h2 class="text-xl font-black leading-tight text-stone-900 sm:text-2xl">ご利用前の確認</h2>
+          <ul class="mt-6 space-y-5 text-base leading-8 text-stone-800 sm:text-lg">
+            {#each cautions as caution}
+              <li class="flex gap-3">
+                <span class="mt-3 h-1.5 w-1.5 flex-none rounded-full bg-stone-500"></span>
+                <span>{caution}</span>
+              </li>
+            {/each}
+          </ul>
+        </div>
+      </div>
     </section>
 
-    <section class="space-y-8">
+    <section class="space-y-12">
       {#each guideSections as section, index}
-        <article class="border-b border-stone-200 pb-9 last:border-b-0 last:pb-0">
-          <div class="flex items-center gap-2 sm:gap-3">
-            <span class="flex h-9 w-9 items-center justify-center rounded-full bg-[#e8e2d7] text-xl font-black leading-none tracking-[-0.04em] text-stone-700 tabular-nums sm:h-10 sm:w-10 sm:text-[1.35rem]">
-              {index + 1}
-            </span>
-            <div class="flex flex-1 items-center self-stretch border-b border-stone-300">
-              <h2 class="text-xl font-black leading-tight text-stone-900 sm:text-2xl">{section.title}</h2>
-            </div>
-          </div>
-          <div class="mt-4 space-y-4 text-sm leading-8 text-stone-700 sm:mt-5 sm:text-base">
+        <article class="border-b border-stone-200 pb-12 last:border-b-0 last:pb-0">
+          <h2 class="text-xl font-black leading-tight text-stone-900 sm:text-2xl">{section.title}</h2>
+          <div class="mt-6 space-y-5 text-base leading-8 text-stone-700 sm:text-lg">
             {#each section.body as paragraph}
               <p>{paragraph}</p>
             {/each}
           </div>
         </article>
+
       {/each}
     </section>
 
-    <section class="border-t border-stone-300 pt-8">
-      <h2 class="text-lg font-black text-stone-900 sm:text-xl">次に見る</h2>
-      <div class="mt-4 overflow-hidden rounded-2xl border border-stone-300 bg-white">
-        {#each relatedPages as page, index}
-          <a
-            href={page.href}
-            class="grid grid-cols-[9rem_minmax(0,1fr)_auto] items-center gap-4 px-4 py-3.5 text-left transition-colors hover:bg-stone-50 sm:grid-cols-[11rem_minmax(0,1fr)_auto]"
-            class:border-b={index < relatedPages.length - 1}
-            class:border-stone-200={index < relatedPages.length - 1}
-          >
-            <div class="min-w-0 border-r border-stone-200 pr-4">
-              <div class="font-black leading-6 text-stone-900">
-                {page.title}
-              </div>
-            </div>
-            <div class="min-w-0 text-sm leading-7 text-stone-600 sm:text-base">
-              {page.description}
-            </div>
-            <span class="shrink-0 text-stone-400">›</span>
-          </a>
-        {/each}
-      </div>
+    <div class="flex justify-center">
+      <img
+        src="/decorations/cross_sparkle.svg"
+        alt=""
+        aria-hidden="true"
+        class="pointer-events-none h-12 w-12"
+      />
+    </div>
 
-      <a
-        href="/"
-        class="mt-5 inline-flex items-center gap-2 rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-bold text-stone-700 transition-colors hover:bg-stone-50"
-      >
-        <span aria-hidden="true">‹</span>
-        地図に戻る
-      </a>
+    <section class="relative border-t border-stone-300 pt-10">
+      <img
+        src="/decorations/blob_pink_purple.svg"
+        alt=""
+        aria-hidden="true"
+        class="pointer-events-none absolute z-[1] opacity-[0.90] -left-16 -top-12 h-44 w-44 sm:-left-36 sm:-top-28 sm:h-64 sm:w-64"
+      />
+      <div class="relative z-10">
+        <h2 class="text-lg font-black text-stone-900 sm:text-xl">次に見る</h2>
+        <div class="mt-6 overflow-hidden rounded-2xl border border-stone-300 bg-white">
+          {#each relatedPages as page, index}
+            <a
+              href={page.href}
+              class="grid grid-cols-[10rem_minmax(0,1fr)_auto] items-center gap-5 px-6 py-5 text-left transition-colors hover:bg-stone-50 sm:grid-cols-[14rem_minmax(0,1fr)_auto]"
+              class:border-b={index < relatedPages.length - 1}
+              class:border-stone-200={index < relatedPages.length - 1}
+            >
+              <div class="min-w-0 border-r border-stone-200 pr-4">
+                <div class="text-base font-black leading-6 text-stone-900">
+                  {page.title}
+                </div>
+              </div>
+              <div class="min-w-0 text-base leading-7 text-stone-600 sm:text-lg">
+                {page.description}
+              </div>
+              <span class="shrink-0 text-stone-400">›</span>
+            </a>
+          {/each}
+        </div>
+      </div>
     </section>
   </div>
 </div>

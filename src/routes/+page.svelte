@@ -14,6 +14,7 @@
 <script lang="ts">
   import { browser } from '$app/environment';
   import { env } from '$env/dynamic/public';
+  import { onMount } from 'svelte';
   import 'maplibre-gl/dist/maplibre-gl.css';
   import {
     MapLibre,
@@ -82,6 +83,12 @@
   let selectedCityKeys = $state<string[]>([]);
   let areaScope = $state<AreaScope>('all');
   let sidebarOpen = $state(false);
+  onMount(() => {
+    if (browser && sessionStorage.getItem('openSidebar') === '1') {
+      sidebarOpen = true;
+      sessionStorage.removeItem('openSidebar');
+    }
+  });
   let facilities = $state<GeoFeature[]>([]);
   let selectedFacilityId = $state<string | null>(null);
   let markerStyle = $state<MarkerStyle>(getMarkerStyle());
