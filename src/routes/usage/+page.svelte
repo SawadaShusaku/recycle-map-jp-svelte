@@ -66,7 +66,14 @@
 </script>
 
 <div class="min-h-screen bg-[#f7f7f2] text-stone-800">
-  <div class="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
+  <div class="relative mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
+    <img
+      src="/decorations/blob_green_blue.svg"
+      alt=""
+      aria-hidden="true"
+      class="pointer-events-none absolute -right-12 -top-8 w-48 opacity-40 sm:w-64"
+    />
+
     <a
       href="/"
       class="inline-flex w-fit items-center gap-2 rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-bold text-stone-700 transition-colors hover:bg-stone-50"
@@ -115,6 +122,13 @@
         </article>
       {/each}
     </section>
+
+    <img
+      src="/decorations/dots_pattern.svg"
+      alt=""
+      aria-hidden="true"
+      class="pointer-events-none mx-auto w-32 opacity-30"
+    />
 
     <section class="border-t border-stone-300 pt-8">
       <h2 class="text-lg font-black text-stone-900 sm:text-xl">次に見る</h2>
