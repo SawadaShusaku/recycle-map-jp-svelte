@@ -1,0 +1,10 @@
+#!/bin/sh
+# 負のz-indexを検出
+if grep -r "z-\[-" src/ 2>/dev/null; then
+  echo "❌ エラー: 負のz-index (z-[-*]) が検出されました"
+  echo "正の整数のみを使用してください (z-10, z-20 など)"
+  exit 1
+fi
+
+# lint-stagedを実行
+npx lint-staged
