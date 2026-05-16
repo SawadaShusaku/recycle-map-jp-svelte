@@ -15,16 +15,16 @@
 - [x] 2.5 データライセンス（各プロバイダー利用規約・OpenFreeMap）を記述する
 - [x] 2.6 `/static/decorations/*.svg` からblob・sparkle等の装飾SVGを `<img aria-hidden="true">` で組み込む
 - [x] 2.7 地図に戻るリンクを設置する
-- [ ] 2.8 `jj describe` でデータページ実装をコミット記述する
+- [x] 2.8 `jj describe` でデータページ実装をコミット記述する
 
 ## 3. 更新情報ページ（/updates）
 
-- [ ] 3.1 `src/routes/updates/+page.svelte` を新規作成する
-- [ ] 3.2 ページタイトル・メタ説明を設定する（`buildPageTitle('更新情報')`）
-- [ ] 3.3 更新エントリを逆時系列順で実装する（全国対応、D1移行、カテゴリ追加など）
-- [ ] 3.4 各エントリに日付・タイトル・説明を記載する
-- [ ] 3.5 `/static/decorations/*.svg` から装飾SVGを組み込む
-- [ ] 3.6 地図に戻るリンクを設置する
+- [x] 3.1 `src/routes/updates/+page.svelte` を新規作成する
+- [x] 3.2 ページタイトル・メタ説明を設定する（`buildPageTitle('更新情報')`）
+- [x] 3.3 更新エントリを逆時系列順で実装する（全国対応、D1移行、カテゴリ追加など）
+- [x] 3.4 各エントリに日付・タイトル・説明を記載する
+- [x] 3.5 `/static/decorations/*.svg` から装飾SVGを組み込む
+- [x] 3.6 地図に戻るリンクを設置する
 - [ ] 3.7 `jj describe` で更新情報ページ実装をコミット記述する
 
 ## 4. プライバシーポリシーページ（/privacy-policy）
