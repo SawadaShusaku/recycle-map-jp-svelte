@@ -15,6 +15,7 @@ declare namespace Cloudflare {
 		MAPILLARY_TOKEN: string;
 		DATABASE_NAME: string;
 		DATABASE_ID: string;
+		OPENROUTESERVICE_API_KEY: string;
 	}
 	interface ProductionEnv {
 		RECYCLING_DB: D1Database;
@@ -26,6 +27,7 @@ declare namespace Cloudflare {
 		MAPILLARY_TOKEN: string;
 		DATABASE_NAME: string;
 		DATABASE_ID: string;
+		OPENROUTESERVICE_API_KEY: string;
 	}
 	interface Env {
 		RECYCLING_DB: D1Database;
@@ -37,6 +39,7 @@ declare namespace Cloudflare {
 		MAPILLARY_TOKEN: string;
 		DATABASE_NAME: string;
 		DATABASE_ID: string;
+		OPENROUTESERVICE_API_KEY: string;
 	}
 }
 interface Env extends Cloudflare.Env {}
