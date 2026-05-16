@@ -2,7 +2,7 @@
   <title>{buildPageTitle('更新情報')}</title>
   <meta
     name="description"
-    content={`${SITE_NAME_JA}の更新履歴。データの全国対応、機能追加、カテゴリ拡充などの変更情報を掲載しています。`}
+    content={`${SITE_NAME_JA}の更新履歴。機能追加やデータ改善などの変更情報を掲載しています。`}
   />
 </svelte:head>
 
@@ -11,32 +11,38 @@
 
   const updates = [
     {
-      date: '2026-05',
-      title: 'サイドバー情報ページの充実',
-      description: '「データについて」「更新情報」「プライバシーポリシー」の各ページを新設し、サイドバーから直接アクセスできるようにしました。',
+      title: 'コンテンツページとサイドバーの改善',
+      description: '「データについて」「更新情報」「プライバシーポリシー」のページを新設。サイドバーのセクション順序を変更し、これらのページへ直接ナビゲートできるようにしました。',
     },
     {
-      date: '2026-04',
-      title: 'UI装飾素材の統合',
-      description: 'コンテンツページにSVGデコレーションを追加し、読みやすさと視覚的な質感を向上させました。',
+      title: 'UI装飾素材の追加と適用',
+      description: 'コンテンツページ用のSVGデコレーション素材を追加し、既存の装飾コンポーネントをSvelte 5 runesモードに対応させました。',
     },
     {
-      date: '2026-03',
-      title: '全国対応（都道府県単位のデータ追加）',
-      description: '東京都内に限定していた回収拠点データを、全国の都道府県単位で拡充しました。',
+      title: 'OGP・Twitter Card対応',
+      description: 'SNSシェア時のリンクプレビューに対応するため、OGPおよびTwitter Card用のメタタグを追加しました。',
     },
     {
-      date: '2026-02',
-      title: 'カテゴリの追加',
-      description: '乾電池、充電式電池、ボタン電池など、回収品目のカテゴリを追加し、絞り込み機能を強化しました。',
+      title: '都道府県単位での選択とオートズーム',
+      description: '都道府県を選択すると、対象エリアに自動的にズームする機能を追加しました。',
     },
     {
-      date: '2026-01',
-      title: 'Cloudflare D1へのデータ移行',
-      description: 'データ管理をSQLiteからCloudflare D1に移行し、より安定した高速クエリを実現しました。',
+      title: '行政区画サマリーへの移行',
+      description: '地図上のクラスター円表示を、行政区画ベースのサマリー表示に変更しました。',
     },
     {
-      date: '2025-12',
+      title: 'D1カテゴリメタデータの導入',
+      description: 'Cloudflare D1にカテゴリのメタデータ（色、アイコン、順序など）を持たせ、ローカルと同期する仕組みを導入しました。',
+    },
+    {
+      title: 'ルート所要時間表示の削除',
+      description: '経路所要時間の表示を削除しました。',
+    },
+    {
+      title: 'Google座標パイプラインと場所マージングの改善',
+      description: '複数データソースからの座標取得パイプラインを改善し、同一施設の重複排除（マージング）精度を向上させました。',
+    },
+    {
       title: 'ベータ版リリース',
       description: `${SITE_NAME_JA}をベータ版として公開しました。地図表示、カテゴリ絞り込み、検索機能を搭載しています。`,
     },
@@ -44,70 +50,66 @@
 </script>
 
 <div class="min-h-screen bg-[#f7f7f2] text-stone-800">
-  <div class="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
+  <div class="relative mx-auto flex w-full max-w-4xl lg:max-w-5xl xl:max-w-6xl flex-col gap-12 px-8 py-12 sm:px-12 sm:py-16">
     <a
       href="/"
-      class="inline-flex w-fit items-center gap-2 rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-bold text-stone-700 transition-colors hover:bg-stone-50"
+      onclick={() => sessionStorage.setItem('openSidebar', '1')}
+      class="group relative z-10 inline-flex w-fit items-center gap-2"
     >
-      <span aria-hidden="true">‹</span>
-      地図に戻る
+      <svg
+        class="h-7 w-7 text-stone-400 transition-colors group-hover:text-stone-800"
+        viewBox="0 0 60 60"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M 40 15 L 25 30 L 40 45" />
+        <path d="M 25 15 L 10 30 L 25 45" />
+      </svg>
+      <span class="text-xl font-bold text-stone-600 transition-colors group-hover:text-stone-900">戻る</span>
     </a>
 
-    <!-- Hero: star accent signals "achievement / news" -->
-    <section class="relative overflow-hidden border-b border-stone-300 pb-6">
+    <section class="relative border-b border-stone-300 pb-10">
       <img
         src="/decorations/sparkle_star.svg"
         alt=""
         aria-hidden="true"
-        class="pointer-events-none absolute right-6 top-6 h-10 w-10 opacity-[0.55] sm:right-10 sm:top-8 sm:h-12 sm:w-12"
+        class="pointer-events-none absolute z-[1] opacity-[0.90] -right-2 top-4 h-10 w-10 sm:-right-4 sm:top-8 sm:h-12 sm:w-12"
       />
-      <p class="text-xs font-bold tracking-[0.18em] text-stone-500">UPDATES</p>
+      <div class="relative z-10">
+        <p class="text-xs font-bold tracking-[0.18em] text-stone-500">UPDATES</p>
       <h1 class="mt-2 text-3xl font-black tracking-tight text-stone-900 sm:text-4xl">更新情報</h1>
-      <p class="mt-4 text-sm leading-8 text-stone-600 sm:text-base">
-        {SITE_NAME_JA}の機能追加、データ拡充、その他の変更履歴を掲載しています。
+      <p class="mt-6 text-base leading-8 text-stone-600 sm:text-lg">
+        {SITE_NAME_JA}の機能追加、その他の変更履歴を掲載しています。
       </p>
+      </div>
     </section>
 
-    <!-- Timeline: warm background wash on the bottom half creates closure -->
-    <section class="relative overflow-hidden rounded-3xl bg-white p-5 shadow-sm sm:p-6">
+    <img
+      src="/decorations/dots_pattern.svg"
+      alt=""
+      aria-hidden="true"
+      class="pointer-events-none absolute z-[1] opacity-[0.50] -left-8 top-[45%] h-[20rem] w-[20rem] sm:-left-12 sm:top-[50%] sm:h-[28rem] sm:w-[28rem]"
+    />
+
+    <section class="relative z-10 rounded-3xl bg-white p-10 shadow-sm sm:p-12">
       <img
         src="/decorations/blob_pink_purple.svg"
         alt=""
         aria-hidden="true"
-        class="pointer-events-none absolute -bottom-20 -right-12 h-72 w-72 opacity-[0.09]"
+        class="pointer-events-none absolute z-[1] opacity-[0.90] -top-12 -right-12 h-56 w-56 sm:-top-24 sm:-right-24 sm:h-80 sm:w-80"
       />
-      <div class="relative space-y-6">
-        {#each updates as update, index}
-          <article class="border-b border-stone-200 pb-6 last:border-b-0 last:pb-0">
-            <div class="flex items-baseline gap-3">
-              <time class="shrink-0 text-sm font-bold tabular-nums text-stone-500">{update.date}</time>
-              <div class="h-px flex-1 bg-stone-200"></div>
-            </div>
-            <h2 class="mt-3 text-lg font-black text-stone-900 sm:text-xl">{update.title}</h2>
-            <p class="mt-2 text-sm leading-7 text-stone-700 sm:text-base">{update.description}</p>
+      <div class="relative z-10 space-y-10">
+        {#each updates as update}
+          <article class="border-b border-stone-200 pb-10 last:border-b-0 last:pb-0">
+            <h2 class="text-lg font-black text-stone-900 sm:text-xl">{update.title}</h2>
+            <p class="mt-4 text-base leading-8 text-stone-700 sm:text-lg">{update.description}</p>
           </article>
-
-          <!-- Dots as rhythmic separator after every 2nd entry -->
-          {#if index === 1}
-            <div class="flex justify-center py-2">
-              <img
-                src="/decorations/dots_pattern.svg"
-                alt=""
-                aria-hidden="true"
-                class="pointer-events-none h-10 w-10 opacity-[0.25]"
-              />
-            </div>
-          {/if}
         {/each}
       </div>
     </section>
-
-    <a
-      href="/"
-      class="inline-flex w-fit items-center gap-2 rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-bold text-stone-700 transition-colors hover:bg-stone-50"
-    >
-      <span aria-hidden="true">‹</span>
-      地図に戻る
-    </a>
   </div>
 </div>
