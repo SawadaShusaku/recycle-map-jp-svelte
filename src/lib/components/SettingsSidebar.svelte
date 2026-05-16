@@ -87,9 +87,9 @@
 
   const infoMenuItems: InfoMenuItem[] = [
     { label: '使い方', href: '/usage', icon: HelpCircle, accent: true },
-    { label: 'データについて', icon: FileText },
-    { label: '更新情報', icon: Sparkles },
-    { label: 'プライバシーポリシー', icon: ShieldCheck },
+    { label: 'データについて', href: '/about-data', icon: FileText },
+    { label: '更新情報', href: '/updates', icon: Sparkles },
+    { label: 'プライバシーポリシー', href: '/privacy-policy', icon: ShieldCheck },
   ];
 
   function handleStyleChange(style: MarkerStyle) {
@@ -157,23 +157,6 @@
     <div class="refined-sidebar__body">
       {#if currentSection === 'home'}
         <section class="refined-section">
-          <h3 class="refined-section__title">表示設定</h3>
-          {#each settingSections as sec}
-            {@const Icon = sec.icon}
-            <button class="refined-list-row" onclick={() => goSection(sec.id)}>
-              <span class="refined-list-row__icon">
-                <Icon size={18} />
-              </span>
-              <div class="refined-list-row__main">
-                <p class="refined-list-row__label">{sec.label}</p>
-                <p class="refined-list-row__sub">{sec.sub}</p>
-              </div>
-              <ChevronRight class="refined-list-row__chev" size={16} />
-            </button>
-          {/each}
-        </section>
-
-        <section class="refined-section">
           <h3 class="refined-section__title">情報・ヘルプ</h3>
           {#each infoMenuItems as item}
             {@const Icon = item.icon}
@@ -212,6 +195,23 @@
                 <ChevronRight class="refined-list-row__chev" size={16} />
               </div>
             {/if}
+          {/each}
+        </section>
+
+        <section class="refined-section">
+          <h3 class="refined-section__title">表示設定</h3>
+          {#each settingSections as sec}
+            {@const Icon = sec.icon}
+            <button class="refined-list-row" onclick={() => goSection(sec.id)}>
+              <span class="refined-list-row__icon">
+                <Icon size={18} />
+              </span>
+              <div class="refined-list-row__main">
+                <p class="refined-list-row__label">{sec.label}</p>
+                <p class="refined-list-row__sub">{sec.sub}</p>
+              </div>
+              <ChevronRight class="refined-list-row__chev" size={16} />
+            </button>
           {/each}
         </section>
 
