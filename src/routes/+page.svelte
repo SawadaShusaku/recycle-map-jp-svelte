@@ -29,7 +29,7 @@
   } from 'svelte-maplibre-gl';
   import maplibregl from 'maplibre-gl';
   import type { ExpressionSpecification } from '@maplibre/maplibre-gl-style-spec';
-  import { ChevronLeft, ChevronRight, Footprints, Bike, Car, ExternalLink } from 'lucide-svelte';
+  import { ChevronLeft, ChevronRight, Footprints, Bike, Car, ExternalLink, Info } from 'lucide-svelte';
   import { fly } from 'svelte/transition';
   import { cubicOut } from 'svelte/easing';
 
@@ -69,10 +69,9 @@
   import { fetchNearbyThumbs, type MapillaryThumb } from '$lib/mapillary.js';
   import type { CategoryId, MarkerStyle } from '$lib/types.js';
   import type { LineString } from 'geojson';
+  import { calculateHaversineDistance, estimateRoadDistance, estimateTravelTimeMinutes, type TravelMode } from '$lib/route-estimation.js';
 
-  const DEFAULT_OSRM_BASE_URL = 'https://router.project-osrm.org';
   const DEFAULT_MAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';
-  const osrmBaseUrl = env.PUBLIC_OSRM_BASE_URL?.trim() || DEFAULT_OSRM_BASE_URL;
   const mapStyleUrl = env.PUBLIC_MAP_STYLE_URL?.trim() || DEFAULT_MAP_STYLE_URL;
 
   // 状態管理
@@ -101,7 +100,7 @@
   let routeGeoJSON = $state<LineString | null>(null);
   let routeInfo = $state<{ distance: number, duration: number } | null>(null);
   let isFetchingRoute = $state(false);
-  let travelMode = $state<'foot' | 'bike' | 'car'>('foot');
+  let travelMode = $state<TravelMode>('foot');
   let map = $state<maplibregl.Map | undefined>(undefined);
   let heroMap = $state<maplibregl.Map | undefined>(undefined);
   let geolocateControl = $state<maplibregl.GeolocateControl | undefined>(undefined);
@@ -218,13 +217,6 @@
   const CLUSTER_LABEL_HALO_WIDTH = 1.3;
   const CLUSTER_LABEL_HALO_BLUR = 0.4;
   const CLUSTER_LABEL_FONT = ['Noto Sans Bold'];
-  type OsrmRouteResponse = {
-    routes?: Array<{
-      geometry: LineString;
-      distance: number;
-      duration: number;
-    }>;
-  };
 
   function interpolateClusterValueByZoom(values: ClusterZoomValues): ExpressionSpecification {
     return [
@@ -708,10 +700,6 @@
     routeError = null;
 
     try {
-      if (!osrmBaseUrl) {
-        throw new Error('Routing service is not configured');
-      }
-
       const userCoords = await new Promise<GeolocationCoordinates>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(
           (pos) => resolve(pos.coords),
@@ -723,40 +711,41 @@
       const [lng1, lat1] = [userCoords.longitude, userCoords.latitude];
       const [lng2, lat2] = facility.geometry.coordinates;
 
-      const baseUrl = osrmBaseUrl.replace(/\/$/, '');
-      const url = `${baseUrl}/route/v1/${travelMode}/${lng1},${lat1};${lng2},${lat2}?overview=full&geometries=geojson`;
+      // 経路ジオメトリはOpenRouteServiceプロキシから取得
+      const routeRes = await fetch(
+        `/api/route?lng1=${lng1}&lat1=${lat1}&lng2=${lng2}&lat2=${lat2}&mode=${travelMode}`
+      );
+      if (!routeRes.ok) throw new Error(`Route API error: ${routeRes.status}`);
+      const routeData = await routeRes.json() as { geometry: LineString };
+      routeGeoJSON = routeData.geometry;
 
-      const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error(`Failed to fetch route: ${res.statusText}`);
-      }
-      const data = await res.json() as OsrmRouteResponse;
+      // 所要時間はHaversine公式で独自計算
+      const straightDist = calculateHaversineDistance(lng1, lat1, lng2 as number, lat2 as number);
+      const roadDist = estimateRoadDistance(straightDist);
+      const durationMin = estimateTravelTimeMinutes(roadDist, travelMode);
 
-      if (data.routes && data.routes.length > 0) {
-        const route = data.routes[0];
-        routeGeoJSON = route.geometry;
-        routeInfo = {
-          distance: route.distance,
-          duration: route.duration,
-        };
+      routeInfo = {
+        distance: roadDist * 1000,
+        duration: durationMin * 60,
+      };
 
-        if (map && routeGeoJSON) {
-          const bounds = routeGeoJSON.coordinates.reduce(
-            (b, coord) => b.extend(coord as [number, number]),
-            new maplibregl.LngLatBounds(routeGeoJSON.coordinates[0] as [number, number], routeGeoJSON.coordinates[0] as [number, number])
-          );
-          map.fitBounds(bounds, { padding: 80 });
-          selectedFacilityId = null; // 経路表示時はポップアップを閉じる
-        }
-      } else {
-        throw new Error('No route found');
+      if (map && routeGeoJSON) {
+        selectedFacilityId = null; // 経路表示時はポップアップを閉じる
+        const bounds = routeGeoJSON.coordinates.reduce(
+          (b, coord) => b.extend(coord as [number, number]),
+          new maplibregl.LngLatBounds(
+            routeGeoJSON.coordinates[0] as [number, number],
+            routeGeoJSON.coordinates[0] as [number, number]
+          )
+        );
+        map.fitBounds(bounds, { padding: 80 });
       }
     } catch (err) {
       console.error('Error getting route:', err);
       if (err instanceof GeolocationPositionError) {
         routeError = getGeolocationErrorMessage(err);
       } else {
-        routeError = '経路の取得に失敗しました。ネットワーク接続を確認するか、時間をおいて再度お試しください。';
+        routeError = '経路の取得に失敗しました。位置情報のアクセスを確認してください。';
       }
       if (routeError) alert(routeError);
     } finally {
@@ -1036,7 +1025,36 @@
   {#if routeInfo}
     <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 bg-white/95 backdrop-blur-md shadow-2xl rounded-2xl px-6 py-4 flex items-center gap-6 border border-white/50">
       <div>
-        <p class="text-xs font-bold text-gray-500 mb-1">ルート情報</p>
+        <div class="flex items-center gap-2 mb-1.5">
+          <p class="text-sm font-bold text-gray-600 leading-none">ルート情報</p>
+          <div class="relative group self-center flex items-center">
+            <button
+              class="text-gray-400 hover:text-blue-500 transition-colors cursor-help flex items-center leading-none"
+              aria-label="計算方法の説明"
+              onclick={(e) => { e.currentTarget.blur(); }}
+            >
+              <Info size={18} strokeWidth={2} />
+            </button>
+            <div class="
+              pointer-events-none opacity-0 group-hover:opacity-100 group-focus-within:opacity-100
+              absolute bottom-full left-0 mb-2
+              w-[440px] bg-gray-900/96 text-white text-sm rounded-2xl px-4 py-3 shadow-2xl
+              transition-opacity duration-150 z-30 leading-relaxed
+            " role="tooltip">
+              <p>このルート情報は、現在地と施設の緯度・経度から算出した直線距離に、日本の都市部における道路の迂回率（1.3倍）を掛けて推定した距離をもとに計算しています。</p>
+              <div class="mt-2.5 border-t border-white/15 pt-2.5 space-y-1">
+                <p>所要時間は、選択中の移動手段に応じた以下の平均速度をもとに算出しています。</p>
+                <div class="mt-1.5 space-y-0.5">
+                  <p>徒歩: 時速 4.8 km</p>
+                  <p>自転車: 時速 15 km</p>
+                  <p>車: 時速 30 km</p>
+                </div>
+              </div>
+              <p class="mt-2.5">※道路状況により大きく異なる場合があります。</p>
+              <div class="absolute top-full left-5 border-4 border-transparent border-t-gray-900/96"></div>
+            </div>
+          </div>
+        </div>
         <div class="flex items-end gap-4">
           <p class="text-sm font-medium text-gray-800">
             距離: <span class="font-black text-lg text-blue-600">{(routeInfo.distance / 1000).toFixed(1)}</span> <span class="text-gray-500">km</span>
@@ -1055,6 +1073,7 @@
       </button>
     </div>
   {/if}
+
 
 	  <MapLibre
     bind:map={map}
@@ -1080,7 +1099,7 @@
     />
     <FullScreenControl position="bottom-right" />
 
-	    {#if routeGeoJSON}
+    {#if routeGeoJSON}
       <GeoJSONSource id="route" data={routeGeoJSON}>
         <LineLayer
           id="route-line-bg"
@@ -1089,10 +1108,7 @@
             'line-width': 10,
             'line-opacity': 0.8,
           }}
-          layout={{
-            'line-join': 'round',
-            'line-cap': 'round',
-          }}
+          layout={{ 'line-join': 'round', 'line-cap': 'round' }}
         />
         <LineLayer
           id="route-line"
@@ -1101,13 +1117,10 @@
             'line-width': 6,
             'line-opacity': 0.9,
           }}
-          layout={{
-            'line-join': 'round',
-            'line-cap': 'round',
-          }}
+          layout={{ 'line-join': 'round', 'line-cap': 'round' }}
         />
-	      </GeoJSONSource>
-	    {/if}
+      </GeoJSONSource>
+    {/if}
 
       {#each markerImages as markerImage (markerImage.id)}
         <Image id={markerImage.id} image={markerImage.image} />
