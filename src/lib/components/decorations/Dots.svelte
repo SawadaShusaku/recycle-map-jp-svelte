@@ -2,17 +2,28 @@
   /**
    * ドットパターン（水玉）のUI装飾コンポーネント
    */
-  export let size: number = 100;
-  export let color: string = "#C1E1C1"; // パステルグリーン
-  export let rows: number = 5;
-  export let cols: number = 5;
-  export let dotRadius: number = 6;
-  export let spacing: number = 25;
-  export let opacity: number = 0.8;
-  export let className: string = "";
+  let {
+    size = 100,
+    color = "#C1E1C1",
+    rows = 5,
+    cols = 5,
+    dotRadius = 6,
+    spacing = 25,
+    opacity = 0.8,
+    className = "",
+  } = $props<{
+    size?: number;
+    color?: string;
+    rows?: number;
+    cols?: number;
+    dotRadius?: number;
+    spacing?: number;
+    opacity?: number;
+    className?: string;
+  }>();
 
-  const width = cols * spacing;
-  const height = rows * spacing;
+  let width = $derived(cols * spacing);
+  let height = $derived(rows * spacing);
 </script>
 
 <svg 

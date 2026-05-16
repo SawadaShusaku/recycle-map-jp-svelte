@@ -11,14 +11,7 @@
 </script>
 
 <div class="min-h-screen bg-[#f7f7f2] text-stone-800">
-  <div class="relative mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
-    <img
-      src="/decorations/outline_blob.svg"
-      alt=""
-      aria-hidden="true"
-      class="pointer-events-none absolute -right-12 -top-8 w-48 opacity-40 sm:w-64"
-    />
-
+  <div class="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
     <a
       href="/"
       class="inline-flex w-fit items-center gap-2 rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-bold text-stone-700 transition-colors hover:bg-stone-50"
@@ -27,12 +20,21 @@
       地図に戻る
     </a>
 
-    <section class="border-b border-stone-300 pb-6">
-      <p class="text-xs font-bold tracking-[0.18em] text-stone-500">PRIVACY</p>
-      <h1 class="mt-2 text-3xl font-black tracking-tight text-stone-900 sm:text-4xl">プライバシーポリシー</h1>
-      <p class="mt-4 text-sm leading-8 text-stone-600 sm:text-base">
-        {SITE_NAME_JA}では、ユーザーのプライバシーを尊重し、最小限の情報のみを利用しています。
-      </p>
+    <!-- Hero: outline blob as a light enclosing frame -->
+    <section class="relative overflow-hidden border-b border-stone-300 pb-6">
+      <img
+        src="/decorations/outline_blob.svg"
+        alt=""
+        aria-hidden="true"
+        class="pointer-events-none absolute -left-10 -top-10 h-56 w-56 opacity-[0.08]"
+      />
+      <div class="relative">
+        <p class="text-xs font-bold tracking-[0.18em] text-stone-500">PRIVACY</p>
+        <h1 class="mt-2 text-3xl font-black tracking-tight text-stone-900 sm:text-4xl">プライバシーポリシー</h1>
+        <p class="mt-4 text-sm leading-8 text-stone-600 sm:text-base">
+          {SITE_NAME_JA}では、ユーザーのプライバシーを尊重し、最小限の情報のみを利用しています。
+        </p>
+      </div>
     </section>
 
     <section class="space-y-8">
@@ -90,13 +92,20 @@
         </div>
       </article>
 
-      <article class="rounded-3xl border border-[#d8d3c7] bg-[#fffdf8] p-5 sm:p-6">
-        <div class="flex items-start gap-3">
+      <!-- No-collection callout: green-blue background wash signals "safe / trust" -->
+      <article class="relative overflow-hidden rounded-3xl border border-[#d8d3c7] bg-[#fffdf8] p-5 sm:p-6">
+        <img
+          src="/decorations/blob_green_blue.svg"
+          alt=""
+          aria-hidden="true"
+          class="pointer-events-none absolute -right-16 -top-16 h-64 w-64 opacity-[0.06]"
+        />
+        <div class="relative flex items-start gap-3">
           <img
             src="/decorations/sparkle_asterisk.svg"
             alt=""
             aria-hidden="true"
-            class="mt-1 h-6 w-6 shrink-0 opacity-60"
+            class="mt-1.5 h-5 w-5 shrink-0 opacity-40"
           />
           <div>
             <h2 class="text-xl font-black leading-tight text-stone-900 sm:text-2xl">個人情報の収集について</h2>
@@ -112,13 +121,6 @@
         </div>
       </article>
     </section>
-
-    <img
-      src="/decorations/dots_pattern.svg"
-      alt=""
-      aria-hidden="true"
-      class="pointer-events-none mx-auto w-32 opacity-30"
-    />
 
     <a
       href="/"

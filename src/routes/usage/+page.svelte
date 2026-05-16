@@ -66,14 +66,7 @@
 </script>
 
 <div class="min-h-screen bg-[#f7f7f2] text-stone-800">
-  <div class="relative mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
-    <img
-      src="/decorations/blob_green_blue.svg"
-      alt=""
-      aria-hidden="true"
-      class="pointer-events-none absolute -right-12 -top-8 w-48 opacity-40 sm:w-64"
-    />
-
+  <div class="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
     <a
       href="/"
       class="inline-flex w-fit items-center gap-2 rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-bold text-stone-700 transition-colors hover:bg-stone-50"
@@ -82,25 +75,45 @@
       地図に戻る
     </a>
 
-    <section class="border-b border-stone-300 pb-6">
-      <p class="text-xs font-bold tracking-[0.18em] text-stone-500">GUIDE</p>
-      <h1 class="mt-2 text-3xl font-black tracking-tight text-stone-900 sm:text-4xl">使い方</h1>
-      <p class="mt-4 text-sm leading-8 text-stone-600 sm:text-base">
-        {SITE_NAME_JA}は、区ごとに異なる回収拠点を地図上で探すためのアプリです。
-        まず区を選び、必要に応じてカテゴリで絞り込むと、持ち込み先を見つけやすくなります。
-      </p>
+    <!-- Hero: background wash anchors the page introduction -->
+    <section class="relative overflow-hidden border-b border-stone-300 pb-6">
+      <img
+        src="/decorations/blob_green_blue.svg"
+        alt=""
+        aria-hidden="true"
+        class="pointer-events-none absolute -right-16 -top-20 h-72 w-72 opacity-[0.07]"
+      />
+      <div class="relative">
+        <p class="text-xs font-bold tracking-[0.18em] text-stone-500">GUIDE</p>
+        <h1 class="mt-2 text-3xl font-black tracking-tight text-stone-900 sm:text-4xl">使い方</h1>
+        <p class="mt-4 text-sm leading-8 text-stone-600 sm:text-base">
+          {SITE_NAME_JA}は、区ごとに異なる回収拠点を地図上で探すためのアプリです。
+          まず区を選び、必要に応じてカテゴリで絞り込むと、持ち込み先を見つけやすくなります。
+        </p>
+      </div>
     </section>
 
+    <!-- Caution: asterisk accent signals "attention / important notice" -->
     <section class="rounded-3xl border border-[#d8d3c7] bg-[#fffdf8] p-5 sm:p-6">
-      <h2 class="text-xl font-black leading-tight text-stone-900 sm:text-2xl">ご利用前の確認</h2>
-      <ul class="mt-4 space-y-3 text-base leading-8 text-stone-800 sm:mt-5 sm:text-lg">
-        {#each cautions as caution}
-          <li class="flex gap-3">
-            <span class="mt-3 h-1.5 w-1.5 flex-none rounded-full bg-stone-500"></span>
-            <span>{caution}</span>
-          </li>
-        {/each}
-      </ul>
+      <div class="flex items-start gap-3">
+        <img
+          src="/decorations/sparkle_asterisk.svg"
+          alt=""
+          aria-hidden="true"
+          class="mt-1.5 h-5 w-5 shrink-0 opacity-50"
+        />
+        <div>
+          <h2 class="text-xl font-black leading-tight text-stone-900 sm:text-2xl">ご利用前の確認</h2>
+          <ul class="mt-4 space-y-3 text-base leading-8 text-stone-800 sm:text-lg">
+            {#each cautions as caution}
+              <li class="flex gap-3">
+                <span class="mt-3 h-1.5 w-1.5 flex-none rounded-full bg-stone-500"></span>
+                <span>{caution}</span>
+              </li>
+            {/each}
+          </ul>
+        </div>
+      </div>
     </section>
 
     <section class="space-y-8">
@@ -120,37 +133,51 @@
             {/each}
           </div>
         </article>
+
+        <!-- Dots as rhythmic separator between steps 2 and 3 -->
+        {#if index === 1}
+          <div class="flex justify-center py-1">
+            <img
+              src="/decorations/dots_pattern.svg"
+              alt=""
+              aria-hidden="true"
+              class="pointer-events-none h-12 w-12 opacity-[0.25]"
+            />
+          </div>
+        {/if}
       {/each}
     </section>
 
-    <img
-      src="/decorations/dots_pattern.svg"
-      alt=""
-      aria-hidden="true"
-      class="pointer-events-none mx-auto w-32 opacity-30"
-    />
-
-    <section class="border-t border-stone-300 pt-8">
-      <h2 class="text-lg font-black text-stone-900 sm:text-xl">次に見る</h2>
-      <div class="mt-4 overflow-hidden rounded-2xl border border-stone-300 bg-white">
-        {#each relatedPages as page, index}
-          <a
-            href={page.href}
-            class="grid grid-cols-[9rem_minmax(0,1fr)_auto] items-center gap-4 px-4 py-3.5 text-left transition-colors hover:bg-stone-50 sm:grid-cols-[11rem_minmax(0,1fr)_auto]"
-            class:border-b={index < relatedPages.length - 1}
-            class:border-stone-200={index < relatedPages.length - 1}
-          >
-            <div class="min-w-0 border-r border-stone-200 pr-4">
-              <div class="font-black leading-6 text-stone-900">
-                {page.title}
+    <!-- Next pages: outline blob frames the related links container -->
+    <section class="relative overflow-hidden border-t border-stone-300 pt-8">
+      <img
+        src="/decorations/outline_blob.svg"
+        alt=""
+        aria-hidden="true"
+        class="pointer-events-none absolute -left-10 -top-10 h-56 w-56 opacity-[0.10]"
+      />
+      <div class="relative">
+        <h2 class="text-lg font-black text-stone-900 sm:text-xl">次に見る</h2>
+        <div class="mt-4 overflow-hidden rounded-2xl border border-stone-300 bg-white">
+          {#each relatedPages as page, index}
+            <a
+              href={page.href}
+              class="grid grid-cols-[9rem_minmax(0,1fr)_auto] items-center gap-4 px-4 py-3.5 text-left transition-colors hover:bg-stone-50 sm:grid-cols-[11rem_minmax(0,1fr)_auto]"
+              class:border-b={index < relatedPages.length - 1}
+              class:border-stone-200={index < relatedPages.length - 1}
+            >
+              <div class="min-w-0 border-r border-stone-200 pr-4">
+                <div class="font-black leading-6 text-stone-900">
+                  {page.title}
+                </div>
               </div>
-            </div>
-            <div class="min-w-0 text-sm leading-7 text-stone-600 sm:text-base">
-              {page.description}
-            </div>
-            <span class="shrink-0 text-stone-400">›</span>
-          </a>
-        {/each}
+              <div class="min-w-0 text-sm leading-7 text-stone-600 sm:text-base">
+                {page.description}
+              </div>
+              <span class="shrink-0 text-stone-400">›</span>
+            </a>
+          {/each}
+        </div>
       </div>
 
       <a

@@ -44,12 +44,12 @@
 - [x] 5.1 `/static/decorations/blob_green_blue.svg` および他の素材をページのビジュアル装飾として組み込む
 - [x] 5.2 全既存コンテンツ（注意事項・ガイドセクション・次に見るリンク）が維持されていることを確認する
 - [x] 5.3 装飾SVGに `aria-hidden="true"` が付与されていることを確認する
-- [ ] 5.4 `jj describe` でusageページの更新をコミット記述する
+- [x] 5.4 `jj describe` でusageページの更新をコミット記述する
 
 ## 6. 検証
 
-- [ ] 6.1 `npm run smoke` を実行してSSRエラーがないことを確認する
-- [ ] 6.2 `npm run check` を実行して型エラーがないことを確認する
-- [ ] 6.3 ブラウザで `/about-data`・`/updates`・`/privacy-policy`・`/usage` の各ページが表示されることを確認する
-- [ ] 6.4 サイドバーから各ページへナビゲートできることを確認する
-- [ ] 6.5 `jj describe` で最終コミット記述をまとめる
+- [x] 6.1 `npm run smoke` を実行してSSRエラーがないことを確認する
+- [x] 6.2 `npm run check` を実行して型エラーがないことを確認する
+- [x] 6.3 ブラウザで `/about-data`・`/updates`・`/privacy-policy`・`/usage` の各ページが表示されることを確認する
+- [x] 6.4 サイドバーから各ページへナビゲートできることを確認する
+- [x] 6.5 `jj describe` で最終コミット記述をまとめる

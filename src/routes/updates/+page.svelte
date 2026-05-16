@@ -44,14 +44,7 @@
 </script>
 
 <div class="min-h-screen bg-[#f7f7f2] text-stone-800">
-  <div class="relative mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
-    <img
-      src="/decorations/blob_pink_purple.svg"
-      alt=""
-      aria-hidden="true"
-      class="pointer-events-none absolute -right-12 -top-8 w-48 opacity-40 sm:w-64"
-    />
-
+  <div class="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
     <a
       href="/"
       class="inline-flex w-fit items-center gap-2 rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-bold text-stone-700 transition-colors hover:bg-stone-50"
@@ -60,7 +53,14 @@
       地図に戻る
     </a>
 
-    <section class="border-b border-stone-300 pb-6">
+    <!-- Hero: star accent signals "achievement / news" -->
+    <section class="relative overflow-hidden border-b border-stone-300 pb-6">
+      <img
+        src="/decorations/sparkle_star.svg"
+        alt=""
+        aria-hidden="true"
+        class="pointer-events-none absolute right-6 top-6 h-10 w-10 opacity-[0.55] sm:right-10 sm:top-8 sm:h-12 sm:w-12"
+      />
       <p class="text-xs font-bold tracking-[0.18em] text-stone-500">UPDATES</p>
       <h1 class="mt-2 text-3xl font-black tracking-tight text-stone-900 sm:text-4xl">更新情報</h1>
       <p class="mt-4 text-sm leading-8 text-stone-600 sm:text-base">
@@ -68,25 +68,39 @@
       </p>
     </section>
 
-    <section class="space-y-6">
-      {#each updates as update, index}
-        <article class="relative border-b border-stone-200 pb-6 last:border-b-0 last:pb-0">
-          <div class="flex items-baseline gap-3">
-            <time class="shrink-0 text-sm font-bold tabular-nums text-stone-500">{update.date}</time>
-            <div class="h-px flex-1 bg-stone-200"></div>
-          </div>
-          <h2 class="mt-3 text-lg font-black text-stone-900 sm:text-xl">{update.title}</h2>
-          <p class="mt-2 text-sm leading-7 text-stone-700 sm:text-base">{update.description}</p>
-        </article>
-      {/each}
-    </section>
+    <!-- Timeline: warm background wash on the bottom half creates closure -->
+    <section class="relative overflow-hidden rounded-3xl bg-white p-5 shadow-sm sm:p-6">
+      <img
+        src="/decorations/blob_pink_purple.svg"
+        alt=""
+        aria-hidden="true"
+        class="pointer-events-none absolute -bottom-20 -right-12 h-72 w-72 opacity-[0.09]"
+      />
+      <div class="relative space-y-6">
+        {#each updates as update, index}
+          <article class="border-b border-stone-200 pb-6 last:border-b-0 last:pb-0">
+            <div class="flex items-baseline gap-3">
+              <time class="shrink-0 text-sm font-bold tabular-nums text-stone-500">{update.date}</time>
+              <div class="h-px flex-1 bg-stone-200"></div>
+            </div>
+            <h2 class="mt-3 text-lg font-black text-stone-900 sm:text-xl">{update.title}</h2>
+            <p class="mt-2 text-sm leading-7 text-stone-700 sm:text-base">{update.description}</p>
+          </article>
 
-    <img
-      src="/decorations/sparkle_star.svg"
-      alt=""
-      aria-hidden="true"
-      class="pointer-events-none mx-auto w-24 opacity-40"
-    />
+          <!-- Dots as rhythmic separator after every 2nd entry -->
+          {#if index === 1}
+            <div class="flex justify-center py-2">
+              <img
+                src="/decorations/dots_pattern.svg"
+                alt=""
+                aria-hidden="true"
+                class="pointer-events-none h-10 w-10 opacity-[0.25]"
+              />
+            </div>
+          {/if}
+        {/each}
+      </div>
+    </section>
 
     <a
       href="/"
