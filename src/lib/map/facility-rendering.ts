@@ -4,19 +4,31 @@ import type { FeatureCollection, Point } from 'geojson';
 import type { GeoFeature } from '$lib/data.js';
 import type { CategoryId, MarkerStyle } from '$lib/types.js';
 
-export const CLUSTER_TRANSITION_ZOOM = 11.75;
-export const PREFECTURE_SUMMARY_MAX_ZOOM = 10;
-export const INDIVIDUAL_MARKER_MIN_ZOOM = CLUSTER_TRANSITION_ZOOM;
-export const WARD_SUMMARY_MAX_ZOOM = CLUSTER_TRANSITION_ZOOM;
-export const WARD_SUMMARY_CLICK_ZOOM = 14;
-export const CLUSTER_PREFECTURE_ZOOM = 8;
-export const CLUSTER_WIDE_AREA_ZOOM = 9;
-export const CLUSTER_WARD_AREA_ZOOM = 10;
-export const CLUSTER_WIDE_AREA_RADIUS_PX = 28;
-export const CLUSTER_WARD_AREA_RADIUS_PX = 35;
-export const MARKER_ICON_WIDTH = 32;
-export const MARKER_ICON_HEIGHT = 42;
-export const MARKER_ICON_SIZE = 27 / MARKER_ICON_WIDTH;
+import {
+	CLUSTER_WIDE_AREA_ZOOM,
+	CLUSTER_WARD_AREA_ZOOM,
+	CLUSTER_WIDE_AREA_RADIUS_PX,
+	CLUSTER_WARD_AREA_RADIUS_PX,
+	PREFECTURE_CLICK_ZOOM,
+	WARD_SUMMARY_CLICK_ZOOM
+} from '$lib/constants/map';
+
+export {
+	CLUSTER_TRANSITION_ZOOM,
+	PREFECTURE_SUMMARY_MAX_ZOOM,
+	INDIVIDUAL_MARKER_MIN_ZOOM,
+	WARD_SUMMARY_MAX_ZOOM,
+	WARD_SUMMARY_CLICK_ZOOM,
+	CLUSTER_PREFECTURE_ZOOM,
+	CLUSTER_WIDE_AREA_ZOOM,
+	CLUSTER_WARD_AREA_ZOOM,
+	CLUSTER_WIDE_AREA_RADIUS_PX,
+	CLUSTER_WARD_AREA_RADIUS_PX,
+	MARKER_ICON_WIDTH,
+	MARKER_ICON_HEIGHT,
+	MARKER_ICON_SIZE,
+	JAPAN_WIDE_CLUSTER_MAX_ZOOM
+} from '$lib/constants/map';
 
 const METERS_PER_DEGREE_LATITUDE = 111_320;
 const FALLBACK_MUNICIPALITY_AREA_M2 = 75_000_000;
@@ -48,6 +60,12 @@ export interface WardSummaryFeatureProperties {
 	minLat: number;
 	maxLng: number;
 	maxLat: number;
+}
+
+export interface JapanWideSummaryFeatureProperties {
+	label: string;
+	cityLabel: string;
+	facilityCount: number;
 }
 
 export function buildFacilityIndex(facilities: GeoFeature[]): Map<string, GeoFeature> {
@@ -251,6 +269,45 @@ export function buildWardSummaryFeatureCollection(
 	};
 }
 
+export function buildJapanWideSummaryFeatureCollection(
+	facilities: GeoFeature[]
+): FeatureCollection<Point, JapanWideSummaryFeatureProperties> {
+	const validFacilities = facilities.filter((facility) =>
+		isFiniteCoordinatePair(facility.geometry.coordinates)
+	);
+
+	if (validFacilities.length === 0) {
+		return { type: 'FeatureCollection', features: [] };
+	}
+
+	let sumLng = 0;
+	let sumLat = 0;
+
+	for (const facility of validFacilities) {
+		const [lng, lat] = facility.geometry.coordinates;
+		sumLng += lng;
+		sumLat += lat;
+	}
+
+	return {
+		type: 'FeatureCollection',
+		features: [
+			{
+				type: 'Feature',
+				geometry: {
+					type: 'Point',
+					coordinates: [sumLng / validFacilities.length, sumLat / validFacilities.length]
+				},
+				properties: {
+					label: '日本',
+					cityLabel: '日本',
+					facilityCount: validFacilities.length
+				}
+			}
+		]
+	};
+}
+
 export function panToFacility(
 	map: maplibregl.Map,
 	facility: GeoFeature,
@@ -281,6 +338,23 @@ export function fitToWardSummary(
 	summary: WardSummaryFeatureProperties,
 	isMobile: boolean
 ): void {
+	if (summary.city === 'japan') {
+		const center: [number, number] = summary.facilityCount > 0
+			? [summary.sumLng / summary.facilityCount, summary.sumLat / summary.facilityCount]
+			: [
+				(summary.minLng + summary.maxLng) / 2,
+				(summary.minLat + summary.maxLat) / 2
+			];
+
+		map.easeTo({
+			center,
+			zoom: PREFECTURE_CLICK_ZOOM,
+			offset: isMobile ? [0, -window.innerHeight * 0.2] : [0, 0],
+			duration: 500
+		});
+		return;
+	}
+
 	if (summary.summaryType === 'prefecture') {
 		const bounds: [[number, number], [number, number]] = [
 			[summary.minLng, summary.minLat],
