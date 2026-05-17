@@ -9,7 +9,6 @@ export const PREFECTURE_SUMMARY_MAX_ZOOM = 10;
 export const INDIVIDUAL_MARKER_MIN_ZOOM = CLUSTER_TRANSITION_ZOOM;
 export const WARD_SUMMARY_MAX_ZOOM = CLUSTER_TRANSITION_ZOOM;
 export const WARD_SUMMARY_CLICK_ZOOM = 14;
-export const PREFECTURE_SUMMARY_CLICK_ZOOM = 10.2;
 export const CLUSTER_PREFECTURE_ZOOM = 8;
 export const CLUSTER_WIDE_AREA_ZOOM = 9;
 export const CLUSTER_WARD_AREA_ZOOM = 10;
@@ -282,6 +281,19 @@ export function fitToWardSummary(
 	summary: WardSummaryFeatureProperties,
 	isMobile: boolean
 ): void {
+	if (summary.summaryType === 'prefecture') {
+		const bounds: [[number, number], [number, number]] = [
+			[summary.minLng, summary.minLat],
+			[summary.maxLng, summary.maxLat]
+		];
+		map.fitBounds(bounds, {
+			padding: isMobile ? 60 : 80,
+			offset: isMobile ? [0, -window.innerHeight * 0.2] : [0, 0],
+			duration: 500
+		});
+		return;
+	}
+
 	const center: [number, number] = summary.facilityCount > 0
 		? [summary.sumLng / summary.facilityCount, summary.sumLat / summary.facilityCount]
 		: [
@@ -291,7 +303,7 @@ export function fitToWardSummary(
 
 	map.easeTo({
 		center,
-		zoom: summary.summaryType === 'prefecture' ? PREFECTURE_SUMMARY_CLICK_ZOOM : WARD_SUMMARY_CLICK_ZOOM,
+		zoom: WARD_SUMMARY_CLICK_ZOOM,
 		offset: isMobile ? [0, -window.innerHeight * 0.2] : [0, 0],
 		duration: 500
 	});

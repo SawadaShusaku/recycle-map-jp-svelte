@@ -1,6 +1,6 @@
 export type MarkerStyle = 'adaptive' | 'solid' | 'gradient';
 
-export type LogoFont = 'zen-kaku-gothic' | 'm-plus-rounded' | 'klee-one';
+export type LogoFont = 'zen-kaku-gothic' | 'm-plus-rounded' | 'klee-one' | 'biz-udp-mincho' | 'dot-gothic' | 'hachi-maru-pop' | 'kaisei-decol' | 'kiwi-maru' | 'rampart-one' | 'zen-kurenaido' | 'zen-maru-gothic';
 
 export type FontTarget = 'logo' | 'popup' | 'ui';
 
