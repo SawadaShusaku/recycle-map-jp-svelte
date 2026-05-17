@@ -111,7 +111,7 @@
       </div>
     </section>
 
-    <section class="relative overflow-hidden rounded-3xl border border-[#d8d3c7] bg-[#fffdf8] p-10 sm:p-12">
+    <section class="relative overflow-hidden rounded-3xl border border-[#d8d3c7] bg-[#fffdf8] p-5 sm:p-8">
       <img
         src="/decorations/geo_cluster.svg"
         alt=""
@@ -145,7 +145,7 @@
       </div>
     </section>
 
-    <section class="relative rounded-3xl border border-stone-200 bg-white p-10 sm:p-12">
+    <section class="relative rounded-3xl border border-stone-200 bg-white p-5 sm:p-8">
       <img
         src="/decorations/blob_pink_purple.svg"
         alt=""
