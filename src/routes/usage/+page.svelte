@@ -105,7 +105,7 @@
       </div>
     </section>
 
-    <section class="rounded-3xl border border-[#d8d3c7] bg-[#fffdf8] p-10 sm:p-12">
+    <section class="rounded-3xl border border-[#d8d3c7] bg-[#fffdf8] p-5 sm:p-8">
       <div class="flex items-start gap-3">
         <img
           src="/decorations/sparkle_asterisk.svg"
