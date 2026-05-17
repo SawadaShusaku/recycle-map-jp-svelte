@@ -13,6 +13,14 @@ const fontMap: Record<LogoFont, string> = {
   'zen-kaku-gothic': '"Zen Kaku Gothic New"',
   'm-plus-rounded': '"M PLUS Rounded 1c"',
   'klee-one': '"Klee One"',
+  'biz-udp-mincho': '"BIZ UDPMincho"',
+  'dot-gothic': '"DotGothic16"',
+  'hachi-maru-pop': '"Hachi Maru Pop"',
+  'kaisei-decol': '"Kaisei Decol"',
+  'kiwi-maru': '"Kiwi Maru"',
+  'rampart-one': '"Rampart One"',
+  'zen-kurenaido': '"Zen Kurenaido"',
+  'zen-maru-gothic': '"Zen Maru Gothic"',
 };
 
 const cssVarMap: Record<FontTarget, string> = {
@@ -93,6 +101,14 @@ export function getLogoFontLabel(font: LogoFont): string {
     'zen-kaku-gothic': 'Zen Kaku Gothic New',
     'm-plus-rounded': 'M PLUS Rounded 1c',
     'klee-one': 'Klee One',
+    'biz-udp-mincho': 'BIZ UDPMincho',
+    'dot-gothic': 'DotGothic16',
+    'hachi-maru-pop': 'Hachi Maru Pop',
+    'kaisei-decol': 'Kaisei Decol',
+    'kiwi-maru': 'Kiwi Maru',
+    'rampart-one': 'Rampart One',
+    'zen-kurenaido': 'Zen Kurenaido',
+    'zen-maru-gothic': 'Zen Maru Gothic',
   };
   return labels[font];
 }
