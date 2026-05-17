@@ -64,6 +64,14 @@
     'zen-kaku-gothic',
     'm-plus-rounded',
     'klee-one',
+    'biz-udp-mincho',
+    'dot-gothic',
+    'hachi-maru-pop',
+    'kaisei-decol',
+    'kiwi-maru',
+    'rampart-one',
+    'zen-kurenaido',
+    'zen-maru-gothic',
   ];
 
   const fontTargets: { key: FontTarget; label: string }[] = [
@@ -120,6 +128,14 @@
       'zen-kaku-gothic': '"Zen Kaku Gothic New"',
       'm-plus-rounded': '"M PLUS Rounded 1c"',
       'klee-one': '"Klee One"',
+      'biz-udp-mincho': '"BIZ UDPMincho"',
+      'dot-gothic': '"DotGothic16"',
+      'hachi-maru-pop': '"Hachi Maru Pop"',
+      'kaisei-decol': '"Kaisei Decol"',
+      'kiwi-maru': '"Kiwi Maru"',
+      'rampart-one': '"Rampart One"',
+      'zen-kurenaido': '"Zen Kurenaido"',
+      'zen-maru-gothic': '"Zen Maru Gothic"',
     };
     return `font-family: ${map[font] ?? 'inherit'}, sans-serif;`;
   }
