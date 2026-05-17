@@ -338,6 +338,7 @@ export function buildJapanWideAdministrativeSummaryFeatureCollections(
 	const polygons: AdminSummaryPolygonCollection['features'] = [];
 	for (const boundary of boundaries.features) {
 		const labelPoint = getBoundaryLabelPoint(boundary.geometry) ?? center;
+		const prefecture = boundaryPrefecture(boundary);
 		polygons.push({
 			type: 'Feature',
 			geometry: boundary.geometry,
@@ -356,8 +357,8 @@ export function buildJapanWideAdministrativeSummaryFeatureCollections(
 				maxLat: labelPoint[1],
 				areaKey: 'japan',
 				boundaryCode: null,
-				boundaryPrefecture: '',
-				boundaryCityLabel: '日本'
+				boundaryPrefecture: prefecture,
+				boundaryCityLabel: prefecture
 			}
 		});
 	}
@@ -396,7 +397,6 @@ export function buildJapanWideAdministrativeSummaryFeatureCollections(
 		}
 	};
 }
-
 export async function loadAdminBoundaryCollection(
 	level: AdminBoundaryLevel,
 	fetcher: typeof fetch = fetch
