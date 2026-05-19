@@ -10,6 +10,8 @@
 
 **[ライブデモ](https://tokyo-recycle-map.com/)**
 
+![スクリーンショット](docs/screenshots/screenshot-main.png)
+
 ## ご利用にあたって
 
 メーカーや製品の状態によっては回収対象外となる場合があります。
