@@ -12,6 +12,9 @@ invocation_logs = true
 
 # Mapillary クライアントトークンは `npx wrangler secret put MAPILLARY_TOKEN`
 # でサーバ専用シークレットとして登録します（ブラウザには公開されません）。
+# お問い合わせフォームは `RESEND_API_KEY` と `TURNSTILE_SECRET_KEY` を
+# `npx wrangler secret put ...` で登録し、CONTACT_FROM_EMAIL / CONTACT_TO_EMAIL
+# を環境ごとに設定して使用します。
 
 # Root config is the production Worker used by Cloudflare Git integration.
 [[d1_databases]]

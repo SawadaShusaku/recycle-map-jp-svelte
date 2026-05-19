@@ -1,0 +1,5 @@
+export const TURNSTILE_SITE_KEY = '0x4AAAAAADSblskoxiF4EWxq';
+
+export const CONTACT_NAME_MAX_LENGTH = 120;
+export const CONTACT_EMAIL_MAX_LENGTH = 254;
+export const CONTACT_MESSAGE_MAX_LENGTH = 4000;

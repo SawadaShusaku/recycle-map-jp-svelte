@@ -41,6 +41,17 @@ PUBLIC_OSRM_BASE_URL=https://router.project-osrm.org
 PUBLIC_MAP_STYLE_URL=https://tiles.openfreemap.org/styles/liberty
 ```
 
+お問い合わせフォームを有効にする場合は、Resend と Cloudflare Turnstile の設定も追加します。
+
+```env
+RESEND_API_KEY=
+TURNSTILE_SECRET_KEY=
+CONTACT_FROM_EMAIL=
+CONTACT_TO_EMAIL=
+```
+
+本番・プレビューの Worker では `RESEND_API_KEY` と `TURNSTILE_SECRET_KEY` を `npx wrangler secret put ...` で登録してください。`CONTACT_FROM_EMAIL` は Resend で送信可能な確認済み送信元、`CONTACT_TO_EMAIL` は問い合わせ受信用の宛先です。
+
 ### 3. 開発サーバーの起動
 
 **DBなし（UIのみ）**:

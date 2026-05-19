@@ -23,6 +23,7 @@
     FileText,
     Sparkles,
     ShieldCheck,
+    Mail,
   } from 'lucide-svelte';
   import { fade, fly } from 'svelte/transition';
   import { cubicOut } from 'svelte/easing';
@@ -96,6 +97,7 @@
     { label: 'データについて', href: '/about-data', icon: FileText },
     { label: '更新情報', href: '/updates', icon: Sparkles },
     { label: 'プライバシーポリシー', href: '/privacy-policy', icon: ShieldCheck },
+    { label: 'お問い合わせ', href: '/contact', icon: Mail },
   ];
 
   function handleStyleChange(style: MarkerStyle) {
