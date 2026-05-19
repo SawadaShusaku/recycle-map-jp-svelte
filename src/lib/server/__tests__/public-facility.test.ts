@@ -54,6 +54,121 @@ describe('toPublicFacility', () => {
 		expect('collector_id' in publicFacility).toBe(false);
 	});
 
+	it('strips facility type labels from public notes', () => {
+		const facility: FacilityWithCategories = {
+			id: 'facility-post',
+			ward_id: 'ward-1',
+			prefecture: '東京都',
+			city_label: '千代田区',
+			name: '東京中央郵便局',
+			address: '東京都千代田区',
+			latitude: 35.69,
+			longitude: 139.76,
+			url: null,
+			official_url: null,
+			category_urls: null,
+			collector_id: null,
+			hours: null,
+			notes: '郵便局',
+			image_url: null,
+			image_alt: null,
+			image_credit: null,
+			image_source_url: null,
+			mapillary_image_id: null,
+			categories: ['dry-battery']
+		};
+
+		const publicFacility = toPublicFacility(facility);
+		expect(publicFacility.notes).toBeNull();
+	});
+
+	it('strips all facility type labels from notes and entries', () => {
+		const labels = ['郵便局', '自治体施設', '図書館', 'お店', '民間施設', 'その他', '常設'];
+		for (const label of labels) {
+			const facility: FacilityWithCategories = {
+				id: 'facility-1',
+				ward_id: 'ward-1',
+				prefecture: '東京都',
+				city_label: '千代田区',
+				name: '回収店',
+				address: '東京都千代田区',
+				latitude: 35.69,
+				longitude: 139.76,
+				url: null,
+				official_url: null,
+				category_urls: null,
+				collector_id: null,
+				hours: null,
+				notes: label,
+				image_url: null,
+				image_alt: null,
+				image_credit: null,
+				image_source_url: null,
+				mapillary_image_id: null,
+				categories: ['dry-battery'],
+				collection_entries: [
+					{
+						id: 'entry-1',
+						place_id: 'facility-1',
+						category_id: 'dry-battery',
+						data_source_id: 'source-1',
+						source_display_name: null,
+						source_address: null,
+						normalized_source_address: null,
+						source_url: null,
+						hours: null,
+						notes: label,
+						location_hint: null,
+						image_url: null,
+						image_alt: null,
+						image_credit: null,
+						image_source_url: null,
+						mapillary_image_id: null,
+						source_fetched_at: '2026-05-12T00:00:00Z',
+						source_published_at: null,
+						is_active: 1,
+						created_at: '2026-05-12T00:00:00Z',
+						updated_at: '2026-05-12T00:00:00Z',
+					data_source_name: undefined,
+					data_source_url: undefined
+					}
+				]
+			};
+
+			const publicFacility = toPublicFacility(facility);
+			expect(publicFacility.notes).toBeNull();
+			expect(publicFacility.collection_entries[0].notes).toBeNull();
+		}
+	});
+
+	it('preserves useful location hints in notes', () => {
+		const facility: FacilityWithCategories = {
+			id: 'facility-hint',
+			ward_id: 'ward-1',
+			prefecture: '東京都',
+			city_label: '千代田区',
+			name: '回収店',
+			address: '東京都千代田区',
+			latitude: 35.69,
+			longitude: 139.76,
+			url: null,
+			official_url: null,
+			category_urls: null,
+			collector_id: null,
+			hours: null,
+			notes: '入口横のボックス',
+			image_url: null,
+			image_alt: null,
+			image_credit: null,
+			image_source_url: null,
+			mapillary_image_id: null,
+			categories: ['dry-battery']
+		};
+
+		const publicFacility = toPublicFacility(facility);
+		expect(publicFacility.notes).toBe('入口横のボックス');
+	});
+
 	it('strips internal geocoding notes from public text fields', () => {
 		const facility: FacilityWithCategories = {
 			id: 'facility-2',
