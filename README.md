@@ -10,7 +10,7 @@
 本アプリは複数のデータソースを統合し、ユーザーが品目と地域から
 最寄りの拠点を一度に確認できるようにすることを目的としています。
 
-**[ライブデモ](https://svelte-maplibre-app01.negamamiura.workers.dev/)**
+**[ライブデモ](https://tokyo-recycle-map.com/)**
 
 ## ご利用にあたって
 
