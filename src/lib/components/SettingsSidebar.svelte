@@ -24,6 +24,7 @@
     Sparkles,
     ShieldCheck,
     Mail,
+    Coffee,
   } from 'lucide-svelte';
   import { fade, fly } from 'svelte/transition';
   import { cubicOut } from 'svelte/easing';
@@ -99,6 +100,8 @@
     { label: 'プライバシーポリシー', href: '/privacy-policy', icon: ShieldCheck },
     { label: 'お問い合わせ', href: '/contact', icon: Mail },
   ];
+
+  const buyMeACoffeeUrl = 'https://buymeacoffee.com/sawac';
 
   function handleStyleChange(style: MarkerStyle) {
     markerStyle = style;
@@ -307,6 +310,16 @@
     </div>
 
     <footer class="refined-sidebar__footer">
+      <a
+        href={buyMeACoffeeUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="refined-sidebar__support"
+        aria-label="Buy Me a Coffeeで開発を支援"
+      >
+        <Coffee size={18} />
+        <span>開発を支援する</span>
+      </a>
       <div class="refined-sidebar__links">
         <a
           href="https://github.com/SawadaShusaku/recycle-map-jp-svelte"
@@ -491,6 +504,32 @@
     border-top: 1px solid rgba(15, 23, 42, 0.05);
     font-size: 13px;
     color: #1f2937;
+  }
+
+  .refined-sidebar__support {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    background: #ffdd00;
+    color: #111827;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: inset 0 -1px 0 rgba(17, 24, 39, 0.14);
+    transition: transform 0.15s ease, filter 0.15s ease;
+  }
+
+  .refined-sidebar__support:hover {
+    filter: brightness(0.98);
+  }
+
+  .refined-sidebar__support:active {
+    transform: scale(0.99);
   }
 
   .refined-sidebar__links {

@@ -144,6 +144,10 @@ async function verifyTurnstile(
 	}
 
 	const outcome = (await response.json()) as TurnstileOutcome;
+	if (!outcome.success) {
+		console.warn('[contact] Turnstile verification failed', outcome['error-codes'] ?? []);
+	}
+
 	return outcome.success ? 'ok' : 'failed';
 }
 
@@ -163,22 +167,28 @@ async function sendContactEmail(
 			from: env.CONTACT_FROM_EMAIL,
 			to: [env.CONTACT_TO_EMAIL],
 			reply_to: submission.email,
-			subject: `お問い合わせ: ${submission.name}`,
+			subject: `[全国リサイクルマップ] お問い合わせ: ${submission.name}`,
 			text: [
-				'全国リサイクルマップのお問い合わせフォームから送信されました。',
+				'全国リサイクルマップのお問い合わせフォームから新しいメッセージが届きました。',
 				'',
-				`送信日時: ${now.toISOString()}`,
-				`お名前: ${submission.name}`,
-				`メールアドレス: ${submission.email}`,
+				'■ 送信日時',
+				now.toISOString(),
 				'',
-				'お問い合わせ内容:',
+				'■ お名前',
+				submission.name,
+				'',
+				'■ メールアドレス',
+				submission.email,
+				'',
+				'■ お問い合わせ内容',
 				submission.message
 			].join('\n')
 		})
 	});
 
 	if (!response.ok) {
-		console.warn('[contact] Resend delivery failed', response.status);
+		const responseText = await response.text().catch(() => '');
+		console.warn('[contact] Resend delivery failed', response.status, responseText.slice(0, 500));
 		return false;
 	}
 
