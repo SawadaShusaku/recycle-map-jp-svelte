@@ -45,6 +45,19 @@ export function containsTokenBearingUrl(value: unknown): boolean {
 	return TOKEN_BEARING_URL_PATTERNS.some((pattern) => pattern.test(value));
 }
 
+export function isApprovedPublicUrl(value: unknown): value is string {
+	if (typeof value !== 'string') return false;
+	const trimmed = value.trim();
+	if (!trimmed || containsTokenBearingUrl(trimmed)) return false;
+
+	try {
+		const url = new URL(trimmed);
+		return url.protocol === 'https:' || url.protocol === 'http:';
+	} catch {
+		return false;
+	}
+}
+
 export function isApprovedPublicMediaUrl(value: unknown): value is string {
-	return typeof value === 'string' && value.trim().length > 0 && !containsTokenBearingUrl(value);
+	return isApprovedPublicUrl(value);
 }

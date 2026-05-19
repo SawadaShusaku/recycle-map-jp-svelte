@@ -18,6 +18,10 @@ const ORS_PROFILES: Record<string, string> = {
   car: 'driving-car',
 };
 
+function isValidLngLat(lng: number, lat: number): boolean {
+  return Number.isFinite(lng) && Number.isFinite(lat) && lng >= -180 && lng <= 180 && lat >= -90 && lat <= 90;
+}
+
 type OrsResponse = {
   routes?: Array<{
     geometry: string; // encoded polyline or GeoJSON depending on request
@@ -36,7 +40,7 @@ export const GET: RequestHandler = async ({ url, platform }) => {
   const lat2 = Number(url.searchParams.get('lat2'));
   const mode = url.searchParams.get('mode') ?? 'foot';
 
-  if ([lng1, lat1, lng2, lat2].some((v) => !Number.isFinite(v))) {
+  if (!isValidLngLat(lng1, lat1) || !isValidLngLat(lng2, lat2)) {
     throw error(400, 'lng1, lat1, lng2, lat2 are required');
   }
 

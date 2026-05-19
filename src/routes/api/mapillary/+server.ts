@@ -59,6 +59,10 @@ function angleDelta(a: number, b: number): number {
   return Math.abs(((a - b + 540) % 360) - 180);
 }
 
+function isValidLngLat(lng: number, lat: number): boolean {
+  return Number.isFinite(lng) && Number.isFinite(lat) && lng >= -180 && lng <= 180 && lat >= -90 && lat <= 90;
+}
+
 function rankAndShape(images: ApiImage[], lng: number, lat: number, limit: number): Thumb[] {
   const target: [number, number] = [lng, lat];
   return images
@@ -93,7 +97,7 @@ export const GET: RequestHandler = async ({ url, platform }) => {
     Math.max(1, Number(url.searchParams.get('limit')) || DEFAULT_LIMIT),
   );
 
-  if (!Number.isFinite(lng) || !Number.isFinite(lat)) {
+  if (!isValidLngLat(lng, lat)) {
     throw error(400, 'lng/lat required');
   }
 
