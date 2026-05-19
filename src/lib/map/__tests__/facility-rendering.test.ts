@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { GeoFeature } from '$lib/data';
-import { buildJapanWideSummaryFeatureCollection, buildMarkerFeatureCollection, buildWardSummaryFeatureCollection } from '../facility-rendering';
+import { buildJapanWideSummaryFeatureCollection, buildMarkerFeatureCollection, buildWardSummaryFeatureCollection, fitToWardSummary } from '../facility-rendering';
 
 function feature(
 	id: string,
@@ -94,6 +94,42 @@ describe('buildWardSummaryFeatureCollection', () => {
 
 		expect(summary.features).toHaveLength(1);
 		expect(summary.features[0].properties.city).toBe('toshima');
+	});
+});
+
+describe('fitToWardSummary', () => {
+	it('uses focus bounds when zooming to a prefecture summary', () => {
+		const calls: Array<{
+			bounds: [[number, number], [number, number]];
+			options: { padding?: number };
+		}> = [];
+		const map = {
+			fitBounds(bounds: [[number, number], [number, number]], options: { padding?: number }) {
+				calls.push({ bounds, options });
+			}
+		};
+
+		fitToWardSummary(map as never, {
+			prefecture: '東京都',
+			city: '東京都',
+			cityLabel: '東京都',
+			summaryType: 'prefecture',
+			facilityCount: 2,
+			clusterRadiusScale: 1,
+			sumLng: 281,
+			sumLat: 60.5,
+			minLng: 139.7,
+			minLat: 24.8,
+			maxLng: 141.3,
+			maxLat: 35.7,
+			focusMinLng: 138.9,
+			focusMinLat: 35.5,
+			focusMaxLng: 140,
+			focusMaxLat: 35.9
+		}, false);
+
+		expect(calls).toHaveLength(1);
+		expect(calls[0].bounds).toEqual([[138.9, 35.5], [140, 35.9]]);
 	});
 });
 
