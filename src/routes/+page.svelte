@@ -590,8 +590,11 @@
   }
 
   function handleWardSummaryClick(event: maplibregl.MapLayerMouseEvent) {
-    const summary = event.features?.[0]?.properties;
-    if (!summary || !map) return;
+    const feature = event.features?.[0];
+    if (!feature || !map) return;
+
+    const summary = feature.properties;
+    if (!summary) return;
 
     const minLng = Number(summary.minLng);
     const minLat = Number(summary.minLat);
@@ -601,6 +604,19 @@
     const sumLat = Number(summary.sumLat);
     const facilityCount = Number(summary.facilityCount ?? 0);
     const city = typeof summary.city === 'string' ? summary.city : null;
+    const boundaryPrefecture = typeof summary.boundaryPrefecture === 'string' ? summary.boundaryPrefecture : null;
+
+    // 日本全体表示のポリゴンをクリックした場合、クリックされた都道府県にズーム
+    if (city === 'japan' && boundaryPrefecture) {
+      const prefectureSummary = buildWardSummaryFeatureCollection(facilities, 'prefecture')
+        .features.find(feat => feat.properties.city === boundaryPrefecture);
+
+      if (prefectureSummary) {
+        fitToWardSummary(map, prefectureSummary.properties, isMobile);
+        selectedFacilityId = null;
+        return;
+      }
+    }
 
     if (facilityCount <= 0) return;
     if ([minLng, minLat, maxLng, maxLat, sumLng, sumLat].some(Number.isNaN)) return;
