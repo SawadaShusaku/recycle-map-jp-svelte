@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { GeoFeature } from '$lib/data';
-import { buildMarkerFeatureCollection, buildWardSummaryFeatureCollection } from '../facility-rendering';
+import { buildJapanWideSummaryFeatureCollection, buildMarkerFeatureCollection, buildWardSummaryFeatureCollection } from '../facility-rendering';
 
 function feature(
 	id: string,
@@ -131,5 +131,36 @@ describe('buildMarkerFeatureCollection', () => {
 
 		expect(markers.features).toHaveLength(1);
 		expect(markers.features[0].properties.facilityId).toBe('valid');
+	});
+});
+
+describe('buildJapanWideSummaryFeatureCollection', () => {
+	it('returns a single feature with centroid of all facilities', () => {
+		const summary = buildJapanWideSummaryFeatureCollection([
+			feature('west', '東京都', 'toshima', '豊島区', [139.0, 35.0]),
+			feature('east', '東京都', 'chiyoda', '千代田区', [141.0, 37.0])
+		]);
+
+		expect(summary.features).toHaveLength(1);
+		expect(summary.features[0].geometry.coordinates).toEqual([140.0, 36.0]);
+		expect(summary.features[0].properties.label).toBe('日本');
+		expect(summary.features[0].properties.cityLabel).toBe('日本');
+		expect(summary.features[0].properties.facilityCount).toBe(2);
+	});
+
+	it('returns empty collection for no facilities', () => {
+		const summary = buildJapanWideSummaryFeatureCollection([]);
+		expect(summary.features).toHaveLength(0);
+	});
+
+	it('skips facilities with invalid coordinates', () => {
+		const summary = buildJapanWideSummaryFeatureCollection([
+			feature('valid', '東京都', 'toshima', '豊島区', [139.7, 35.7]),
+			feature('invalid', '東京都', 'chiyoda', '千代田区', [null as unknown as number, 35.69])
+		]);
+
+		expect(summary.features).toHaveLength(1);
+		expect(summary.features[0].properties.facilityCount).toBe(1);
+		expect(summary.features[0].geometry.coordinates).toEqual([139.7, 35.7]);
 	});
 });

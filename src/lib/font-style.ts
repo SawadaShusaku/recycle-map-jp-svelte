@@ -9,6 +9,20 @@ const DEFAULT_CHOICES: FontChoices = {
   ui: 'zen-kaku-gothic',
 };
 
+const mapLabelFontMap: Record<LogoFont, string[]> = {
+  'zen-kaku-gothic': ['Noto Sans Bold'],
+  'm-plus-rounded': ['Noto Sans Bold'],
+  'klee-one': ['Noto Sans Bold'],
+  'biz-udp-mincho': ['Noto Sans Bold'],
+  'dot-gothic': ['Noto Sans Bold'],
+  'hachi-maru-pop': ['Noto Sans Bold'],
+  'kaisei-decol': ['Noto Sans Bold'],
+  'kiwi-maru': ['Noto Sans Bold'],
+  'rampart-one': ['Noto Sans Bold'],
+  'zen-kurenaido': ['Noto Sans Bold'],
+  'zen-maru-gothic': ['Noto Sans Bold'],
+};
+
 const fontMap: Record<LogoFont, string> = {
   'zen-kaku-gothic': '"Zen Kaku Gothic New"',
   'm-plus-rounded': '"M PLUS Rounded 1c"',
@@ -69,6 +83,11 @@ export function getFontChoices(): FontChoices {
     }
   }
   return DEFAULT_CHOICES;
+}
+
+export function getMapLabelFont(): string[] {
+  const choice = getFontChoice('ui');
+  return mapLabelFontMap[choice] ?? ['Noto Sans Bold'];
 }
 
 export function getFontChoice(target: FontTarget): LogoFont {

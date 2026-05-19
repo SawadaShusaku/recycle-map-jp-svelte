@@ -37,34 +37,55 @@
   import AppHeader from '$lib/components/AppHeader.svelte';
   import SettingsSidebar from '$lib/components/SettingsSidebar.svelte';
   import MapMarker from '$lib/components/MapMarker.svelte';
-  import { getMarkerStyle, getSolidColor } from '$lib/marker-style.js';
+  import {
+    getMarkerStyle, getSolidColor
+  } from '$lib/marker-style.js';
+  import { getMapLabelFont } from '$lib/font-style.js';
 
   import { getAreas, getCategories, getFacilities, type AreaScope, type CategoryDetailsById, type GeoFeature, type PublicArea } from '$lib/data.js';
   import type { Category } from '$lib/db/types.js';
   import { buildPageTitle, SITE_NAME_JA, SITE_NAME_KICKER, SITE_URL } from '$lib/site.js';
   import {
     buildAdministrativeSummaryFeatureCollections,
+    buildJapanWideAdministrativeSummaryFeatureCollections,
     loadAdminBoundaryCollection,
     type AdminBoundaryCollection
   } from '$lib/map/admin-boundaries.js';
   import {
     buildFacilityIndex,
+    buildJapanWideSummaryFeatureCollection,
     buildMarkerFeatureCollection,
     buildMarkerImageDescriptors,
     buildWardSummaryFeatureCollection,
-    CLUSTER_PREFECTURE_ZOOM,
-    CLUSTER_WARD_AREA_RADIUS_PX,
-    CLUSTER_WARD_AREA_ZOOM,
-    CLUSTER_WIDE_AREA_RADIUS_PX,
-    CLUSTER_WIDE_AREA_ZOOM,
     fitToWardSummary,
-    INDIVIDUAL_MARKER_MIN_ZOOM,
-    MARKER_ICON_SIZE,
-    PREFECTURE_SUMMARY_MAX_ZOOM,
-    WARD_SUMMARY_MAX_ZOOM,
     panToFacility,
     resolveSelectedFacility
   } from '$lib/map/facility-rendering.js';
+  import {
+    CLUSTER_CIRCLE_STROKE_COLOR,
+    CLUSTER_COLOR,
+    CLUSTER_COUNT_FONT_SCALE,
+    CLUSTER_LABEL_HALO_BLUR,
+    CLUSTER_LABEL_HALO_COLOR,
+    CLUSTER_LABEL_HALO_WIDTH,
+    CLUSTER_LABEL_LINE_HEIGHT,
+    CLUSTER_PREFECTURE_ZOOM,
+    CLUSTER_TEXT_SIZE_PX,
+    CLUSTER_WARD_AREA_ZOOM,
+    DEFAULT_MAP_STYLE_URL,
+    INDIVIDUAL_MARKER_MIN_ZOOM,
+    JAPAN_WIDE_CLUSTER_MAX_ZOOM,
+    MARKER_ICON_SIZE,
+    PREFECTURE_CLICK_ZOOM,
+    PREFECTURE_SUMMARY_MAX_ZOOM,
+    SHEET_CLOSE_THRESHOLD_VH,
+    SHEET_DEFAULT_VH,
+    SHEET_MAX_VH,
+    SHEET_MIN_VH,
+    SWIPE_THRESHOLD_PX,
+    WARD_SUMMARY_MAX_ZOOM,
+    type ClusterZoomValues
+  } from '$lib/constants/map';
   import { getMarkerImage } from '$lib/map/marker-images.js';
   import { getCategorySourceUrl } from '$lib/registry.js';
   import { fetchNearbyThumbs, type MapillaryThumb } from '$lib/mapillary.js';
@@ -72,7 +93,6 @@
   import type { LineString } from 'geojson';
   import { calculateHaversineDistance, estimateRoadDistance, estimateTravelTimeMinutes, type TravelMode } from '$lib/route-estimation.js';
 
-  const DEFAULT_MAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';
   const mapStyleUrl = env.PUBLIC_MAP_STYLE_URL?.trim() || DEFAULT_MAP_STYLE_URL;
 
   // 状態管理
@@ -94,6 +114,7 @@
   let markerStyle = $state<MarkerStyle>(getMarkerStyle());
   let solidColor = $state<string>(getSolidColor());
   let markerImages = $state<Array<{ id: string; image: ImageData }>>([]);
+  let mapLabelFont = $state<string[]>(getMapLabelFont());
   let prefectureBoundaryCollection = $state<AdminBoundaryCollection | null>(null);
   let municipalityBoundaryCollection = $state<AdminBoundaryCollection | null>(null);
   let prefectureBoundariesLoading = false;
@@ -127,6 +148,20 @@
   const markerSourceData = $derived(buildMarkerFeatureCollection(facilities, markerStyle, solidColor));
   const summaryLevel = $derived(currentZoom < PREFECTURE_SUMMARY_MAX_ZOOM ? 'prefecture' : 'municipality');
   const wardSummarySourceData = $derived(buildWardSummaryFeatureCollection(facilities, summaryLevel));
+  const japanWideSummarySourceData = $derived(buildJapanWideSummaryFeatureCollection(facilities));
+  const japanWideCenter = $derived<[number, number]>(
+    japanWideSummarySourceData.features[0]?.geometry.type === 'Point'
+      ? (japanWideSummarySourceData.features[0].geometry.coordinates as unknown as [number, number])
+      : [137.5, 37.5]
+  );
+  const japanWideCount = $derived(japanWideSummarySourceData.features[0]?.properties.facilityCount ?? 0);
+  const japanWideAdministrativeSummarySourceData = $derived(
+    buildJapanWideAdministrativeSummaryFeatureCollections(
+      prefectureBoundaryCollection,
+      japanWideCenter,
+      japanWideCount
+    )
+  );
   const activeBoundaryCollection = $derived(
     summaryLevel === 'prefecture' ? prefectureBoundaryCollection : municipalityBoundaryCollection
   );
@@ -177,13 +212,8 @@
     WARD_SUMMARY_MAX_ZOOM,
     summaryLevel === 'prefecture' ? 0.7 : 0.62
   ]);
-  type ClusterZoomValues = {
-    wideArea: number;
-    wardArea: number;
-    transition: number;
-  };
-
-  function getCategoryLabel(categoryId: string): string {
+    function getCategoryLabel
+(categoryId: string): string {
     return categoryById.get(categoryId)?.label ?? categoryId;
   }
 
@@ -191,99 +221,13 @@
     return categoryById.get(categoryId)?.color ?? '#7dd3fc';
   }
 
-  const CLUSTER_ZOOM_INTERPOLATION_BASE = 2;
-  const CLUSTER_COUNTRY_ZOOM = 5.2;
-  const CLUSTER_COUNTRY_RADIUS_SCALE = 0.76;
-  const CLUSTER_PREFECTURE_RADIUS_SCALE = 0.9;
-  const CLUSTER_TEXT_AREA_SCALE = 0.88;
-  const CLUSTER_RADIUS_PX: ClusterZoomValues = {
-    wideArea: CLUSTER_WIDE_AREA_RADIUS_PX,
-    wardArea: CLUSTER_WARD_AREA_RADIUS_PX,
-    transition: 45
-  };
-  const CLUSTER_HALO_RADIUS_PX: ClusterZoomValues = {
-    wideArea: 34,
-    wardArea: 42,
-    transition: 54
-  };
-  const CLUSTER_TEXT_SIZE_PX: ClusterZoomValues = {
-    wideArea: 13,
-    wardArea: 15,
-    transition: 17
-  };
-  const CLUSTER_COLOR = '#0f766e';
-  const CLUSTER_HALO_COLOR = '#14b8a6';
-  const CLUSTER_LABEL_HALO_COLOR = '#064e3b';
-  const CLUSTER_CIRCLE_OPACITY = 0.94;
-  const CLUSTER_HALO_OPACITY = 0.18;
-  const CLUSTER_CIRCLE_STROKE_COLOR = '#ffffff';
-  const CLUSTER_CIRCLE_STROKE_WIDTH = 4;
-  const CLUSTER_HALO_STROKE_WIDTH = 1;
-  const CLUSTER_COUNT_FONT_SCALE = 0.88;
-  const CLUSTER_LABEL_LINE_HEIGHT = 1.28;
-  const CLUSTER_LABEL_HALO_WIDTH = 1.3;
-  const CLUSTER_LABEL_HALO_BLUR = 0.4;
-  const CLUSTER_LABEL_FONT = ['Noto Sans Bold'];
-
-  function interpolateClusterValueByZoom(values: ClusterZoomValues): ExpressionSpecification {
-    return [
-      'interpolate',
-      ['exponential', CLUSTER_ZOOM_INTERPOLATION_BASE],
-      ['zoom'],
-      CLUSTER_PREFECTURE_ZOOM,
-      values.wideArea * 0.72,
-      CLUSTER_WIDE_AREA_ZOOM,
-      values.wideArea,
-      CLUSTER_WARD_AREA_ZOOM,
-      values.wardArea,
-      WARD_SUMMARY_MAX_ZOOM,
-      values.transition
-    ];
-  }
-
-  function scaleClusterValueByArea(values: ClusterZoomValues): ExpressionSpecification {
-    const scale: ExpressionSpecification = ['coalesce', ['get', 'clusterRadiusScale'], 1];
-    const scaledWideAreaValue: ExpressionSpecification = ['*', values.wideArea, scale];
-
-    return [
-      'interpolate',
-      ['exponential', CLUSTER_ZOOM_INTERPOLATION_BASE],
-      ['zoom'],
-      CLUSTER_COUNTRY_ZOOM,
-      ['*', values.wideArea * CLUSTER_COUNTRY_RADIUS_SCALE, scale],
-      CLUSTER_PREFECTURE_ZOOM,
-      ['*', values.wideArea * CLUSTER_PREFECTURE_RADIUS_SCALE, scale],
-      CLUSTER_WIDE_AREA_ZOOM,
-      scaledWideAreaValue,
-      CLUSTER_WARD_AREA_ZOOM,
-      ['*', values.wardArea, scale],
-      WARD_SUMMARY_MAX_ZOOM,
-      ['*', values.transition, scale]
-    ];
-  }
-
-  function multiplyClusterZoomValues(
-    values: ClusterZoomValues,
-    multiplier: number
-  ): ClusterZoomValues {
-    return {
-      wideArea: values.wideArea * multiplier,
-      wardArea: values.wardArea * multiplier,
-      transition: values.transition * multiplier
-    };
-  }
-
-  const CLUSTER_RADIUS_BY_ZOOM = scaleClusterValueByArea(CLUSTER_RADIUS_PX);
-  const CLUSTER_HALO_RADIUS_BY_ZOOM = scaleClusterValueByArea(CLUSTER_HALO_RADIUS_PX);
-  const CLUSTER_TEXT_SIZE_BY_ZOOM = scaleClusterValueByArea(
-    multiplyClusterZoomValues(CLUSTER_TEXT_SIZE_PX, CLUSTER_TEXT_AREA_SCALE)
-  );
-
-  // ボトムシート: ドラッグでリサイズ
-  const SHEET_DEFAULT_VH = 60;
-  const SHEET_MIN_VH = 22;
-  const SHEET_MAX_VH = 92;
-  const SHEET_CLOSE_THRESHOLD_VH = 18;
+  const CLUSTER_TEXT_SIZE_BY_ZOOM: ExpressionSpecification = [
+    'step',
+    ['zoom'],
+    CLUSTER_TEXT_SIZE_PX.prefecture,
+    PREFECTURE_SUMMARY_MAX_ZOOM,
+    CLUSTER_TEXT_SIZE_PX.municipality
+  ];
 
   let sheetHeightVh = $state(SHEET_DEFAULT_VH);
   let dragStartY = 0;
@@ -413,7 +357,6 @@
   }
 
   // ヒーロー画像のスワイプ（左右で前/次の画像へ）
-  const SWIPE_THRESHOLD_PX = 40;
   let heroSwipeStartX = 0;
   let heroSwipeStartY = 0;
   let heroSwipeActive = false;
@@ -1134,11 +1077,63 @@
       {/each}
 
       <GeoJSONSource
+        id="japan-wide-administrative-summary"
+        data={japanWideAdministrativeSummarySourceData.polygons}
+      >
+        <FillLayer
+          id="japan-wide-summary-fills"
+          maxzoom={JAPAN_WIDE_CLUSTER_MAX_ZOOM + 0.01}
+          paint={{
+            'fill-color': CLUSTER_COLOR,
+            'fill-opacity': 0.6,
+            'fill-outline-color': CLUSTER_COLOR
+          }}
+          onclick={handleWardSummaryClick}
+          onmouseenter={handleLayerMouseEnter}
+          onmouseleave={handleLayerMouseLeave}
+        />
+      </GeoJSONSource>
+
+      <GeoJSONSource
+        id="japan-wide-administrative-labels"
+        data={japanWideAdministrativeSummarySourceData.labels}
+      >
+        <SymbolLayer
+          id="japan-wide-summary-labels"
+          maxzoom={JAPAN_WIDE_CLUSTER_MAX_ZOOM + 0.01}
+          layout={{
+            'text-field': [
+              'format',
+              ['get', 'cityLabel'],
+              { 'font-scale': 1 },
+              '\n',
+              {},
+              ['concat', ['to-string', ['get', 'facilityCount']], '件'],
+              { 'font-scale': CLUSTER_COUNT_FONT_SCALE }
+            ],
+            'text-size': 15,
+            'text-font': mapLabelFont,
+            'text-line-height': CLUSTER_LABEL_LINE_HEIGHT,
+            'text-allow-overlap': true,
+            'text-ignore-placement': true
+          }}
+          paint={{
+            'text-color': CLUSTER_CIRCLE_STROKE_COLOR,
+            'text-halo-color': CLUSTER_LABEL_HALO_COLOR,
+            'text-halo-width': CLUSTER_LABEL_HALO_WIDTH,
+            'text-halo-blur': CLUSTER_LABEL_HALO_BLUR
+          }}
+          onclick={handleWardSummaryClick}
+        />
+      </GeoJSONSource>
+
+      <GeoJSONSource
         id="administrative-summary-polygons"
         data={administrativeSummarySourceData.polygons}
       >
         <FillLayer
           id="administrative-summary-fills"
+          minzoom={JAPAN_WIDE_CLUSTER_MAX_ZOOM + 0.01}
           maxzoom={WARD_SUMMARY_MAX_ZOOM}
           paint={{
             'fill-color': administrativeSummaryFillColor,
@@ -1151,6 +1146,7 @@
         />
         <LineLayer
           id="administrative-summary-outlines"
+          minzoom={JAPAN_WIDE_CLUSTER_MAX_ZOOM + 0.01}
           maxzoom={WARD_SUMMARY_MAX_ZOOM}
           paint={{
             'line-color': CLUSTER_COLOR,
@@ -1179,6 +1175,7 @@
       >
         <SymbolLayer
           id="ward-summary-labels"
+          minzoom={JAPAN_WIDE_CLUSTER_MAX_ZOOM + 0.01}
           maxzoom={WARD_SUMMARY_MAX_ZOOM}
           layout={{
             'text-field': [
@@ -1191,7 +1188,7 @@
               { 'font-scale': CLUSTER_COUNT_FONT_SCALE }
             ],
             'text-size': CLUSTER_TEXT_SIZE_BY_ZOOM,
-            'text-font': CLUSTER_LABEL_FONT,
+            'text-font': mapLabelFont,
             'text-line-height': CLUSTER_LABEL_LINE_HEIGHT,
             'text-allow-overlap': true,
             'text-ignore-placement': true

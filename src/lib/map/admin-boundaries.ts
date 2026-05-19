@@ -326,6 +326,77 @@ export function buildAdministrativeSummaryFeatureCollections(
 	};
 }
 
+export function buildJapanWideAdministrativeSummaryFeatureCollections(
+	boundaries: AdminBoundaryCollection | null | undefined,
+	center: [number, number],
+	totalFacilityCount: number
+): AdminSummaryCollections {
+	if (!boundaries) {
+		return EMPTY_ADMIN_SUMMARY_COLLECTIONS;
+	}
+
+	const polygons: AdminSummaryPolygonCollection['features'] = [];
+	for (const boundary of boundaries.features) {
+		const labelPoint = getBoundaryLabelPoint(boundary.geometry) ?? center;
+		polygons.push({
+			type: 'Feature',
+			geometry: boundary.geometry,
+			properties: {
+				prefecture: '',
+				city: 'japan',
+				cityLabel: '日本',
+				summaryType: 'prefecture',
+				facilityCount: totalFacilityCount,
+				clusterRadiusScale: 1,
+				sumLng: center[0] * totalFacilityCount,
+				sumLat: center[1] * totalFacilityCount,
+				minLng: labelPoint[0],
+				minLat: labelPoint[1],
+				maxLng: labelPoint[0],
+				maxLat: labelPoint[1],
+				areaKey: 'japan',
+				boundaryCode: null,
+				boundaryPrefecture: '',
+				boundaryCityLabel: '日本'
+			}
+		});
+	}
+
+	return {
+		polygons: {
+			type: 'FeatureCollection',
+			features: polygons
+		},
+		labels: {
+			type: 'FeatureCollection',
+			features: [
+				{
+					type: 'Feature',
+					geometry: { type: 'Point', coordinates: center },
+					properties: {
+						prefecture: '',
+						city: 'japan',
+						cityLabel: '日本',
+						summaryType: 'prefecture',
+						facilityCount: totalFacilityCount,
+						clusterRadiusScale: 1,
+						sumLng: center[0] * totalFacilityCount,
+						sumLat: center[1] * totalFacilityCount,
+						minLng: center[0],
+						minLat: center[1],
+						maxLng: center[0],
+						maxLat: center[1],
+						areaKey: 'japan',
+						boundaryCode: null,
+						boundaryPrefecture: '',
+						boundaryCityLabel: '日本'
+					}
+				}
+			]
+		}
+	};
+}
+
 export async function loadAdminBoundaryCollection(
 	level: AdminBoundaryLevel,
 	fetcher: typeof fetch = fetch
