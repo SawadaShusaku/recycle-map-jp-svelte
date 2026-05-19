@@ -27,6 +27,10 @@ declare global {
 				RECYCLING_DB?: D1Database;
 				MAPILLARY_CACHE?: KVNamespace;
 				MAPILLARY_TOKEN?: string;
+				TURNSTILE_SECRET_KEY?: string;
+				RESEND_API_KEY?: string;
+				CONTACT_FROM_EMAIL?: string;
+				CONTACT_TO_EMAIL?: string;
 			};
 		}
 	}
