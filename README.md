@@ -35,6 +35,9 @@
 - [Tailwind CSS](https://tailwindcss.com/) v4
 - [Cloudflare Workers](https://workers.cloudflare.com/) / [D1](https://developers.cloudflare.com/d1/)
 - [OpenFreeMap](https://openfreemap.org/) - 地図タイル
+- [OpenRouteService](https://openrouteservice.org/) - 経路検索
+- [Mapillary](https://www.mapillary.com/) - ストリートビュー画像
+- [Google Analytics](https://analytics.google.com/) - アクセス解析
 
 ## データソース
 
