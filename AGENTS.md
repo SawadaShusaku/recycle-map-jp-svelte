@@ -17,6 +17,8 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 | `npm run build:db:local` | Dev-only SQLite validation DB → `.local/recycling-dev.db` |
 | `npm run d1:schema:local` | Apply D1 schema to local D1 |
 | `npm run d1:categories:local` | Apply category label/color/icon/order metadata to local D1 |
+| `npm run d1` | Overwrite local D1 from remote preview D1 |
+| `npm run d1:prod` | Overwrite local D1 from remote production D1 |
 | `npm run d1:sync:local` | Overwrite local D1 from remote production D1 (`-- --from=preview` for preview) |
 | `npm run audit:data` | GeoJSON data quality audit (read-only) |
 | `npm run audit:private-data` | Fail if private data or bulk DB artifacts are tracked |

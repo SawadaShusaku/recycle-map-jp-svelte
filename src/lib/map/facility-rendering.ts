@@ -60,6 +60,10 @@ export interface WardSummaryFeatureProperties {
 	minLat: number;
 	maxLng: number;
 	maxLat: number;
+	focusMinLng?: number;
+	focusMinLat?: number;
+	focusMaxLng?: number;
+	focusMaxLat?: number;
 }
 
 export interface JapanWideSummaryFeatureProperties {
@@ -356,9 +360,18 @@ export function fitToWardSummary(
 	}
 
 	if (summary.summaryType === 'prefecture') {
+		const focusBounds = [
+			summary.focusMinLng,
+			summary.focusMinLat,
+			summary.focusMaxLng,
+			summary.focusMaxLat
+		];
+		const [minLng, minLat, maxLng, maxLat] = focusBounds.every((value) => Number.isFinite(value))
+			? focusBounds as [number, number, number, number]
+			: [summary.minLng, summary.minLat, summary.maxLng, summary.maxLat];
 		const bounds: [[number, number], [number, number]] = [
-			[summary.minLng, summary.minLat],
-			[summary.maxLng, summary.maxLat]
+			[minLng, minLat],
+			[maxLng, maxLat]
 		];
 		map.fitBounds(bounds, {
 			padding: isMobile ? 60 : 80,

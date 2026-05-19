@@ -602,6 +602,11 @@
     const maxLat = Number(summary.maxLat);
     const sumLng = Number(summary.sumLng);
     const sumLat = Number(summary.sumLat);
+    const focusMinLng = Number(summary.focusMinLng);
+    const focusMinLat = Number(summary.focusMinLat);
+    const focusMaxLng = Number(summary.focusMaxLng);
+    const focusMaxLat = Number(summary.focusMaxLat);
+    const hasFocusBounds = [focusMinLng, focusMinLat, focusMaxLng, focusMaxLat].every(Number.isFinite);
     const facilityCount = Number(summary.facilityCount ?? 0);
     const city = typeof summary.city === 'string' ? summary.city : null;
     const boundaryPrefecture = typeof summary.boundaryPrefecture === 'string' ? summary.boundaryPrefecture : null;
@@ -612,7 +617,14 @@
         .features.find(feat => feat.properties.city === boundaryPrefecture);
 
       if (prefectureSummary) {
-        fitToWardSummary(map, prefectureSummary.properties, isMobile);
+        fitToWardSummary(
+          map,
+          {
+            ...prefectureSummary.properties,
+            ...(hasFocusBounds ? { focusMinLng, focusMinLat, focusMaxLng, focusMaxLat } : {})
+          },
+          isMobile
+        );
         selectedFacilityId = null;
         return;
       }
@@ -635,7 +647,8 @@
         minLng,
         minLat,
         maxLng,
-        maxLat
+        maxLat,
+        ...(hasFocusBounds ? { focusMinLng, focusMinLat, focusMaxLng, focusMaxLat } : {})
       },
       isMobile
     );

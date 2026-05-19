@@ -88,6 +88,8 @@ npm run d1:categories:prod
 ローカルD1をリモートD1と同期する場合は、次のコマンドでローカルD1を上書きします。
 
 ```sh
+npm run d1
+npm run d1:prod
 npm run d1:sync:local
 npm run d1:sync:local -- --from=preview
 ```
@@ -133,6 +135,8 @@ Cloudflare Git連携を使用している場合、root `name` はDashboardのWor
 | `npm run build:db:local` | 開発用SQLite検証DB → `.local/recycling-dev.db` |
 | `npm run d1:schema:local` | ローカルD1にスキーマ適用 |
 | `npm run d1:categories:local` | ローカルD1にカテゴリ表示メタデータを適用 |
+| `npm run d1` | preview D1からローカルD1を上書き同期 |
+| `npm run d1:prod` | production D1からローカルD1を上書き同期 |
 | `npm run d1:sync:local` | production D1からローカルD1を上書き同期 |
 | `npm run audit:data` | GeoJSONデータ品質監査（読み取り専用） |
 | `npm run validate:d1-seed` | D1 seed JSONの検証 |

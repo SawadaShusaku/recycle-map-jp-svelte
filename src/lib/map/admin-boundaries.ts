@@ -47,6 +47,13 @@ export interface AdminSummaryCollections {
 	labels: AdminSummaryLabelCollection;
 }
 
+interface BoundaryBounds {
+	minLng: number;
+	minLat: number;
+	maxLng: number;
+	maxLat: number;
+}
+
 export interface ValidatedAdminBoundaryCollection {
 	collection: AdminBoundaryCollection;
 	stats: AdminBoundaryValidationStats;
@@ -205,9 +212,11 @@ function toAdminSummaryProperties(
 	const prefecture = boundaryPrefecture(boundary);
 	const municipality = boundaryMunicipalityLabel(boundary);
 	const firstKey = boundaryAreaKeys(boundary, level)[0] ?? summary.properties.city;
+	const focusBounds = level === 'prefecture' ? getPrimaryPolygonBounds(boundary.geometry) : null;
 
 	return {
 		...summary.properties,
+		...(focusBounds ? toFocusBoundsProperties(focusBounds) : {}),
 		areaKey: firstKey,
 		boundaryCode: code,
 		boundaryPrefecture: prefecture,
@@ -261,6 +270,95 @@ function forEachPosition(geometry: AdminBoundaryGeometry, visitor: (position: [n
 	}
 }
 
+function createEmptyBounds(): BoundaryBounds {
+	return {
+		minLng: Number.POSITIVE_INFINITY,
+		minLat: Number.POSITIVE_INFINITY,
+		maxLng: Number.NEGATIVE_INFINITY,
+		maxLat: Number.NEGATIVE_INFINITY
+	};
+}
+
+function extendBounds(bounds: BoundaryBounds, position: [number, number]): void {
+	const [lng, lat] = position;
+	bounds.minLng = Math.min(bounds.minLng, lng);
+	bounds.minLat = Math.min(bounds.minLat, lat);
+	bounds.maxLng = Math.max(bounds.maxLng, lng);
+	bounds.maxLat = Math.max(bounds.maxLat, lat);
+}
+
+function isValidBounds(bounds: BoundaryBounds): boolean {
+	return [bounds.minLng, bounds.minLat, bounds.maxLng, bounds.maxLat].every(Number.isFinite);
+}
+
+function getRingArea(ring: number[][]): number {
+	if (ring.length < 4) return 0;
+
+	let area = 0;
+	for (let index = 0; index < ring.length - 1; index += 1) {
+		const current = ring[index];
+		const next = ring[index + 1];
+		if (!isFinitePosition(current) || !isFinitePosition(next)) continue;
+		area += current[0] * next[1] - next[0] * current[1];
+	}
+
+	return Math.abs(area) / 2;
+}
+
+function isFinitePosition(position: unknown): position is [number, number] {
+	return (
+		Array.isArray(position) &&
+		position.length >= 2 &&
+		Number.isFinite(position[0]) &&
+		Number.isFinite(position[1])
+	);
+}
+
+function getPolygonBounds(polygon: number[][][]): BoundaryBounds | null {
+	const bounds = createEmptyBounds();
+
+	for (const ring of polygon) {
+		for (const position of ring) {
+			if (isFinitePosition(position)) extendBounds(bounds, position);
+		}
+	}
+
+	return isValidBounds(bounds) ? bounds : null;
+}
+
+function getPrimaryPolygonBounds(geometry: AdminBoundaryGeometry): BoundaryBounds | null {
+	const polygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates;
+	let primaryPolygon: number[][][] | null = null;
+	let primaryArea = Number.NEGATIVE_INFINITY;
+
+	for (const polygon of polygons) {
+		const outerRing = polygon[0];
+		const area = outerRing ? getRingArea(outerRing) : 0;
+		if (area > primaryArea) {
+			primaryArea = area;
+			primaryPolygon = polygon;
+		}
+	}
+
+	return primaryPolygon ? getPolygonBounds(primaryPolygon) : null;
+}
+
+function getBoundsCenter(bounds: BoundaryBounds): [number, number] {
+	return [
+		(bounds.minLng + bounds.maxLng) / 2,
+		(bounds.minLat + bounds.maxLat) / 2
+	];
+}
+
+function toFocusBoundsProperties(bounds: BoundaryBounds) {
+	return {
+		focusMinLng: bounds.minLng,
+		focusMinLat: bounds.minLat,
+		focusMaxLng: bounds.maxLng,
+		focusMaxLat: bounds.maxLat
+	};
+}
+
 function getBoundaryLabelPoint(geometry: AdminBoundaryGeometry): [number, number] | null {
 	let minLng = Number.POSITIVE_INFINITY;
 	let minLat = Number.POSITIVE_INFINITY;
@@ -300,6 +398,7 @@ export function buildAdministrativeSummaryFeatureCollections(
 		const properties = summary
 			? toAdminSummaryProperties(boundary, summary, level)
 			: toZeroSummaryProperties(boundary, level, zeroLabelPoint ?? [0, 0]);
+		const focusBounds = level === 'prefecture' ? getPrimaryPolygonBounds(boundary.geometry) : null;
 		polygons.push({
 			type: 'Feature',
 			geometry: boundary.geometry,
@@ -308,7 +407,9 @@ export function buildAdministrativeSummaryFeatureCollections(
 		if (summary || zeroLabelPoint) {
 			labels.push({
 				type: 'Feature',
-				geometry: summary?.geometry ?? { type: 'Point', coordinates: zeroLabelPoint as [number, number] },
+				geometry: focusBounds
+					? { type: 'Point', coordinates: getBoundsCenter(focusBounds) }
+					: summary?.geometry ?? { type: 'Point', coordinates: zeroLabelPoint as [number, number] },
 				properties
 			});
 		}
@@ -338,6 +439,7 @@ export function buildJapanWideAdministrativeSummaryFeatureCollections(
 	const polygons: AdminSummaryPolygonCollection['features'] = [];
 	for (const boundary of boundaries.features) {
 		const labelPoint = getBoundaryLabelPoint(boundary.geometry) ?? center;
+		const focusBounds = getPrimaryPolygonBounds(boundary.geometry);
 		const prefecture = boundaryPrefecture(boundary);
 		polygons.push({
 			type: 'Feature',
@@ -358,7 +460,8 @@ export function buildJapanWideAdministrativeSummaryFeatureCollections(
 				areaKey: 'japan',
 				boundaryCode: null,
 				boundaryPrefecture: prefecture,
-				boundaryCityLabel: prefecture
+				boundaryCityLabel: prefecture,
+				...(focusBounds ? toFocusBoundsProperties(focusBounds) : {})
 			}
 		});
 	}

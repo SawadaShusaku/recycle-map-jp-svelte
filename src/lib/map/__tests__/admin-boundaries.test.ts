@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { GeoFeature } from '$lib/data';
 import {
 	buildAdministrativeSummaryFeatureCollections,
+	buildJapanWideAdministrativeSummaryFeatureCollections,
 	validateAdminBoundaryCollection,
 	type AdminBoundaryCollection
 } from '../admin-boundaries';
@@ -48,6 +49,13 @@ function square(minLng: number, minLat: number, maxLng: number, maxLat: number) 
 			[minLng, maxLat],
 			[minLng, minLat]
 		]]
+	};
+}
+
+function multiPolygon(...polygons: ReturnType<typeof square>[]) {
+	return {
+		type: 'MultiPolygon' as const,
+		coordinates: polygons.map((polygon) => polygon.coordinates)
 	};
 }
 
@@ -112,6 +120,35 @@ describe('buildAdministrativeSummaryFeatureCollections', () => {
 		const osaka = result.polygons.features.find((item) => item.properties.cityLabel === '大阪府');
 		expect(tokyo?.properties.facilityCount).toBe(2);
 		expect(osaka?.properties.facilityCount).toBe(0);
+	});
+
+	it('adds prefecture focus bounds from the primary polygon for island prefectures', () => {
+		const boundaries: AdminBoundaryCollection = {
+			type: 'FeatureCollection',
+			features: [
+				{
+					type: 'Feature',
+					geometry: multiPolygon(
+						square(138.9, 35.5, 140, 35.9),
+						square(141.2, 24.7, 141.4, 24.9)
+					),
+					properties: { N03_001: '東京都', N03_007: '13' }
+				}
+			]
+		};
+		const summaries = buildWardSummaryFeatureCollection([
+			facility('tokyo-mainland', '東京都', 'shinjuku', '新宿区', [139.7, 35.7]),
+			facility('tokyo-island', '東京都', 'ogasawara', '小笠原村', [141.3, 24.8])
+		], 'prefecture');
+
+		const result = buildAdministrativeSummaryFeatureCollections(boundaries, summaries, 'prefecture');
+
+		expect(result.polygons.features[0].properties.minLat).toBe(24.8);
+		expect(result.polygons.features[0].properties.focusMinLng).toBe(138.9);
+		expect(result.polygons.features[0].properties.focusMinLat).toBe(35.5);
+		expect(result.polygons.features[0].properties.focusMaxLng).toBe(140);
+		expect(result.polygons.features[0].properties.focusMaxLat).toBe(35.9);
+		expect(result.labels.features[0].geometry.coordinates).toEqual([139.45, 35.7]);
 	});
 
 	it('matches Tokyo ward summaries by prefecture and ward label', () => {
@@ -180,5 +217,31 @@ describe('buildAdministrativeSummaryFeatureCollections', () => {
 		expect(result.labels.features).toHaveLength(1);
 		expect(result.labels.features[0].properties.facilityCount).toBe(0);
 		expect(result.labels.features[0].geometry.coordinates).toEqual([130.5, 30.5]);
+	});
+});
+
+describe('buildJapanWideAdministrativeSummaryFeatureCollections', () => {
+	it('adds prefecture focus bounds to japan-wide clickable polygons', () => {
+		const boundaries: AdminBoundaryCollection = {
+			type: 'FeatureCollection',
+			features: [
+				{
+					type: 'Feature',
+					geometry: multiPolygon(
+						square(138.9, 35.5, 140, 35.9),
+						square(141.2, 24.7, 141.4, 24.9)
+					),
+					properties: { N03_001: '東京都', N03_007: '13' }
+				}
+			]
+		};
+
+		const result = buildJapanWideAdministrativeSummaryFeatureCollections(boundaries, [137.5, 37.5], 10);
+
+		expect(result.polygons.features[0].properties.boundaryPrefecture).toBe('東京都');
+		expect(result.polygons.features[0].properties.focusMinLng).toBe(138.9);
+		expect(result.polygons.features[0].properties.focusMinLat).toBe(35.5);
+		expect(result.polygons.features[0].properties.focusMaxLng).toBe(140);
+		expect(result.polygons.features[0].properties.focusMaxLat).toBe(35.9);
 	});
 });
