@@ -134,7 +134,12 @@ async function verifyTurnstile(
 	});
 
 	if (!response.ok) {
-		console.warn('[contact] Turnstile verification request failed', response.status);
+		const responseText = await response.text().catch(() => '');
+		console.warn(
+			'[contact] Turnstile verification request failed',
+			response.status,
+			responseText.slice(0, 300)
+		);
 		return 'unavailable';
 	}
 
