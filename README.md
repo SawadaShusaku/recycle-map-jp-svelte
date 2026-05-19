@@ -1,6 +1,4 @@
-# 全国リサイクルマップ (Japan Recycle Map)
-
-![スクリーンショット](docs/screenshots/screenshot-main.png)
+![全国リサイクルマップ](static/title-logo.png)
 
 リサイクル対象となる電池・インクカートリッジ・使用済み食用油・加熱式たばこ機器などの
 回収拠点を、地図上から横断的に検索できるWebアプリケーションです。
