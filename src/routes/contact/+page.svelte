@@ -16,6 +16,7 @@
 	import { CONTACT_MESSAGE_MAX_LENGTH, TURNSTILE_SITE_KEY } from '$lib/contact';
 	import { buildPageTitle, SITE_NAME_JA } from '$lib/site.js';
 	import { Building2, CheckCircle2, Mail, MessageSquareText, Send, UserRound } from 'lucide-svelte';
+	import { onMount, tick } from 'svelte';
 
 	type SubmitState =
 		| 'idle'
@@ -32,11 +33,20 @@
 		fieldErrors?: Partial<Record<'name' | 'email' | 'message' | 'turnstile', string>>;
 	};
 
+	type TurnstileApi = {
+		render: (container: HTMLElement, params: { sitekey: string }) => string;
+		reset: (widgetId?: string) => void;
+		remove?: (widgetId: string) => void;
+	};
+
 	let formElement = $state<HTMLFormElement>();
+	let turnstileElement = $state<HTMLDivElement>();
 	let submitState = $state<SubmitState>('idle');
 	let fieldErrors = $state<ContactApiResponse['fieldErrors']>({});
 	let statusMessage = $state('');
 	let messageLength = $state(0);
+	let turnstileWidgetId: string | undefined;
+	let turnstileRenderTimer: ReturnType<typeof setTimeout> | undefined;
 
 	const isPending = $derived(submitState === 'pending');
 
@@ -44,10 +54,25 @@
 		statusMessage = result.message ?? fallback;
 	}
 
+	function getTurnstile(): TurnstileApi | undefined {
+		if (!browser) return undefined;
+		return (globalThis as { turnstile?: TurnstileApi }).turnstile;
+	}
+
+	function renderTurnstile() {
+		if (!browser || !turnstileElement || turnstileWidgetId) return;
+		const turnstile = getTurnstile();
+		if (!turnstile) {
+			turnstileRenderTimer = setTimeout(renderTurnstile, 100);
+			return;
+		}
+		turnstileWidgetId = turnstile.render(turnstileElement, {
+			sitekey: TURNSTILE_SITE_KEY
+		});
+	}
+
 	function resetTurnstile() {
-		if (!browser) return;
-		const turnstile = (globalThis as { turnstile?: { reset?: () => void } }).turnstile;
-		turnstile?.reset?.();
+		getTurnstile()?.reset(turnstileWidgetId);
 	}
 
 	function updateMessageLength(event: Event) {
@@ -100,6 +125,19 @@
 			resetTurnstile();
 		}
 	}
+
+	onMount(() => {
+		void tick().then(renderTurnstile);
+
+		return () => {
+			if (turnstileRenderTimer) {
+				clearTimeout(turnstileRenderTimer);
+			}
+			if (turnstileWidgetId) {
+				getTurnstile()?.remove?.(turnstileWidgetId);
+			}
+		};
+	});
 </script>
 
 <div class="min-h-screen bg-[#f7f7f2] text-stone-800">
@@ -253,6 +291,7 @@
 
 					<div>
 						<div
+							bind:this={turnstileElement}
 							class="cf-turnstile min-h-[65px]"
 							data-sitekey={TURNSTILE_SITE_KEY}
 							data-testid="contact-turnstile"
