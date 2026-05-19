@@ -10,7 +10,14 @@ const INTERNAL_NOTE_PATTERNS = [
 	/review[_ -]?comment/i,
 	/private[_ -]?review/i,
 	/内部メモ/,
-	/要確認/
+	/要確認/,
+	/^郵便局$/,
+	/^自治体施設$/,
+	/^図書館$/,
+	/^お店$/,
+	/^民間施設$/,
+	/^その他$/,
+	/^常設$/
 ];
 
 const TOKEN_BEARING_URL_PATTERNS = [
