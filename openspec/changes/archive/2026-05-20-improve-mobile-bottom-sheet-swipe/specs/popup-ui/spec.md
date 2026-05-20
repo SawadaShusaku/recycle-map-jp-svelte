@@ -18,6 +18,8 @@ The bottom sheet SHALL close when the user swipes downward on the sheet surface 
 - **THEN** no close button is displayed inside the bottom sheet
 - **AND** the sheet can still be dismissed by dragging downward or tapping the backdrop
 
+## ADDED Requirements
+
 ### Requirement: Bottom sheet vertical drag coverage
 The bottom sheet SHALL allow vertical drag resizing from the handle, media hero, and content areas where the gesture does not conflict with a more specific interaction.
 
@@ -34,6 +36,8 @@ The bottom sheet SHALL allow vertical drag resizing from the handle, media hero,
 - **WHEN** user starts a horizontally dominant swipe on the image section with multiple images available
 - **THEN** the image carousel changes to the previous or next image
 - **AND** the bottom sheet height does not change because of that horizontal swipe
+
+## MODIFIED Requirements
 
 ### Requirement: Close button size
 Desktop popup close controls SHALL provide a minimum tap target of 32 x 32 pixels. The mobile bottom sheet SHALL omit an in-sheet close button.

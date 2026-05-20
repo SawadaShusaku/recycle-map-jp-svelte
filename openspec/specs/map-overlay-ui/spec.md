@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Map Overlay UI
+
+## Purpose
+
+Define map-level overlay layout and MapLibre popup container integration.
+
+## Requirements
 
 ### Requirement: Full-screen map layout
 The map SHALL occupy the entire viewport (100vw, 100vh) without being constrained by a side panel.
