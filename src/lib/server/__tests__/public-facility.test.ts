@@ -280,4 +280,69 @@ describe('toPublicFacility', () => {
 		expect('normalized_source_address' in publicFacility.collection_entries[0]).toBe(false);
 		expect(JSON.stringify(publicFacility)).not.toContain('confidence');
 	});
+
+	it('drops unsafe URL schemes from public URL fields', () => {
+		const facility: FacilityWithCategories = {
+			id: 'facility-unsafe-url',
+			ward_id: 'ward-1',
+			prefecture: '東京都',
+			city_label: '千代田区',
+			name: '回収店',
+			address: '東京都千代田区',
+			latitude: 35.69,
+			longitude: 139.76,
+			url: 'javascript:alert(1)',
+			official_url: ' https://example.com/official ',
+			category_urls: JSON.stringify({
+				'dry-battery': 'javascript:alert(1)',
+				'button-battery': 'https://example.com/button'
+			}),
+			collector_id: null,
+			hours: null,
+			notes: null,
+			image_url: 'data:image/svg+xml,<svg></svg>',
+			image_alt: null,
+			image_credit: null,
+			image_source_url: 'ftp://example.com/image',
+			mapillary_image_id: null,
+			categories: ['dry-battery'],
+			collection_entries: [
+				{
+					id: 'entry-unsafe-url',
+					place_id: 'facility-unsafe-url',
+					category_id: 'dry-battery',
+					data_source_id: 'source-1',
+					source_display_name: null,
+					source_address: null,
+					normalized_source_address: null,
+					source_url: 'javascript:alert(1)',
+					hours: null,
+					notes: null,
+					location_hint: null,
+					image_url: null,
+					image_alt: null,
+					image_credit: null,
+					image_source_url: null,
+					mapillary_image_id: null,
+					source_fetched_at: '2026-05-12T00:00:00Z',
+					source_published_at: null,
+					is_active: 1,
+					created_at: '2026-05-12T00:00:00Z',
+					updated_at: '2026-05-12T00:00:00Z',
+					data_source_name: 'source',
+					data_source_url: 'https://example.com/source'
+				}
+			]
+		};
+
+		const publicFacility = toPublicFacility(facility);
+
+		expect(publicFacility.url).toBeNull();
+		expect(publicFacility.official_url).toBe('https://example.com/official');
+		expect(publicFacility.category_urls).toBe('{"button-battery":"https://example.com/button"}');
+		expect(publicFacility.image_url).toBeNull();
+		expect(publicFacility.image_source_url).toBeNull();
+		expect(publicFacility.collection_entries[0].source_url).toBeNull();
+		expect(publicFacility.collection_entries[0].data_source_url).toBe('https://example.com/source');
+	});
 });

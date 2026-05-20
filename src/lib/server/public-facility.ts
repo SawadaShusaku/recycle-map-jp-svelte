@@ -1,5 +1,5 @@
 import type { FacilityWithCategories } from '$lib/db/types';
-import { isApprovedPublicMediaUrl, sanitizePublicText } from '../public-data-quality';
+import { isApprovedPublicMediaUrl, isApprovedPublicUrl, sanitizePublicText } from '../public-data-quality';
 
 export type PublicCollectionEntry = {
 	id: string;
@@ -48,6 +48,24 @@ function publicMediaUrl(value: string | null | undefined): string | null {
 	return isApprovedPublicMediaUrl(value) ? value.trim() : null;
 }
 
+function publicUrl(value: string | null | undefined): string | null {
+	return isApprovedPublicUrl(value) ? value.trim() : null;
+}
+
+function publicCategoryUrls(value: string | null | undefined): string | null {
+	if (!value) return null;
+	try {
+		const parsed = JSON.parse(value) as unknown;
+		if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+		const entries = Object.entries(parsed)
+			.map(([key, url]) => [key, publicUrl(typeof url === 'string' ? url : null)] as const)
+			.filter((entry): entry is readonly [string, string] => entry[1] !== null);
+		return entries.length > 0 ? JSON.stringify(Object.fromEntries(entries)) : null;
+	} catch {
+		return null;
+	}
+}
+
 export function toPublicFacility(facility: FacilityWithCategories): PublicFacility {
 	return {
 		id: facility.id,
@@ -58,9 +76,9 @@ export function toPublicFacility(facility: FacilityWithCategories): PublicFacili
 		address: facility.address,
 		latitude: facility.latitude,
 		longitude: facility.longitude,
-		url: facility.url,
-		official_url: facility.official_url,
-		category_urls: facility.category_urls,
+		url: publicUrl(facility.url),
+		official_url: publicUrl(facility.official_url),
+		category_urls: publicCategoryUrls(facility.category_urls),
 		hours: sanitizePublicText(facility.hours),
 		notes: sanitizePublicText(facility.notes),
 		image_url: publicMediaUrl(facility.image_url),
@@ -75,20 +93,20 @@ export function toPublicFacility(facility: FacilityWithCategories): PublicFacili
 				id: entry.id,
 				place_id: entry.place_id,
 				category_id: entry.category_id,
-				data_source_id: entry.data_source_id,
-				source_display_name: sanitizePublicText(entry.source_display_name),
-				source_address: sanitizePublicText(entry.source_address),
-				source_url: publicMediaUrl(entry.source_url),
+					data_source_id: entry.data_source_id,
+					source_display_name: sanitizePublicText(entry.source_display_name),
+					source_address: sanitizePublicText(entry.source_address),
+					source_url: publicUrl(entry.source_url),
 				hours: sanitizePublicText(entry.hours),
 				notes: sanitizePublicText(entry.notes),
 				location_hint: sanitizePublicText(entry.location_hint),
 				image_url: publicMediaUrl(entry.image_url),
 				image_alt: sanitizePublicText(entry.image_alt),
 				image_credit: sanitizePublicText(entry.image_credit),
-				image_source_url: publicMediaUrl(entry.image_source_url),
-				mapillary_image_id: sanitizePublicText(entry.mapillary_image_id),
-				data_source_name: sanitizePublicText(entry.data_source_name),
-				data_source_url: publicMediaUrl(entry.data_source_url)
-			}))
+					image_source_url: publicMediaUrl(entry.image_source_url),
+					mapillary_image_id: sanitizePublicText(entry.mapillary_image_id),
+					data_source_name: sanitizePublicText(entry.data_source_name),
+					data_source_url: publicUrl(entry.data_source_url)
+				}))
 	};
 }

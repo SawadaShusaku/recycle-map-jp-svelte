@@ -290,7 +290,7 @@ export class D1Repository {
 	}
 
 	async searchFacilities(query: string, wardIds: string[]): Promise<FacilityWithCategories[]> {
-		const keywords = query.trim().split(/\s+/).filter(Boolean);
+		const keywords = query.trim().split(/\s+/).filter(Boolean).slice(0, 5);
 		if (keywords.length === 0) return [];
 
 		const params: string[] = [];

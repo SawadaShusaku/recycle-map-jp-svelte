@@ -5,7 +5,7 @@ const PREVIEW_PORT = '3457';
 
 async function runCommand(cmd: string, args: string[]): Promise<void> {
   return new Promise((resolve, reject) => {
-    const child = spawn(cmd, args, { stdio: 'inherit', shell: true });
+    const child = spawn(cmd, args, { stdio: 'inherit' });
     child.on('close', (code) => {
       if (code === 0) resolve();
       else reject(new Error(`Command exited with code ${code}`));

@@ -101,6 +101,38 @@ describe('handleContactSubmission', () => {
 		expect(fetcher).not.toHaveBeenCalled();
 	});
 
+	it('rejects oversized submissions before parsing form data', async () => {
+		const fetcher = makeFetcher();
+		const response = await handleContactSubmission({
+			request: new Request('https://example.test/api/contact', {
+				method: 'POST',
+				headers: { 'content-length': '20001' },
+				body: ''
+			}),
+			env: baseEnv,
+			fetcher
+		});
+		const body = await readJson(response);
+
+		expect(response.status).toBe(413);
+		expect(body.error).toBe('validation');
+		expect(fetcher).not.toHaveBeenCalled();
+	});
+
+	it('removes line breaks from the email subject name', async () => {
+		const fetcher = makeFetcher();
+		const response = await handleContactSubmission({
+			request: makeRequest(validFields({ name: '山田\r\nBcc: attacker@example.com' })),
+			env: baseEnv,
+			fetcher
+		});
+		const resendCall = fetcher.mock.calls.find(([input]) => String(input).includes('api.resend.com'));
+		const resendBody = JSON.parse(String(resendCall?.[1]?.body));
+
+		expect(response.status).toBe(200);
+		expect(resendBody.subject).toBe('[全国リサイクルマップ] お問い合わせ: 山田 Bcc: attacker@example.com');
+	});
+
 	it('returns a server configuration error when the Turnstile secret is missing', async () => {
 		const fetcher = makeFetcher();
 		const response = await handleContactSubmission({

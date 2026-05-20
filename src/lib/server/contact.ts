@@ -7,6 +7,7 @@ import {
 const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 const RESEND_EMAILS_URL = 'https://api.resend.com/emails';
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MAX_CONTACT_BODY_BYTES = 20_000;
 
 type ContactRuntimeEnv = {
 	TURNSTILE_SECRET_KEY?: string;
@@ -67,6 +68,15 @@ function jsonResponse(body: ContactResponse, status = 200): Response {
 function readText(formData: FormData, name: string): string {
 	const value = formData.get(name);
 	return typeof value === 'string' ? value.trim() : '';
+}
+
+function isBodyTooLarge(request: Request): boolean {
+	const contentLength = Number(request.headers.get('content-length'));
+	return Number.isFinite(contentLength) && contentLength > MAX_CONTACT_BODY_BYTES;
+}
+
+function emailHeaderText(value: string): string {
+	return value.replace(/[\r\n]+/g, ' ').trim();
 }
 
 async function readSubmission(request: Request): Promise<{
@@ -167,7 +177,7 @@ async function sendContactEmail(
 			from: env.CONTACT_FROM_EMAIL,
 			to: [env.CONTACT_TO_EMAIL],
 			reply_to: submission.email,
-			subject: `[全国リサイクルマップ] お問い合わせ: ${submission.name}`,
+			subject: `[全国リサイクルマップ] お問い合わせ: ${emailHeaderText(submission.name)}`,
 			text: [
 				'全国リサイクルマップのお問い合わせフォームから新しいメッセージが届きました。',
 				'',
@@ -202,6 +212,20 @@ export async function handleContactSubmission({
 	remoteIp,
 	now = new Date()
 }: HandleContactOptions): Promise<Response> {
+	if (isBodyTooLarge(request)) {
+		return jsonResponse(
+			{
+				success: false,
+				error: 'validation',
+				message: '入力内容を確認してください。',
+				fieldErrors: {
+					message: `${CONTACT_MESSAGE_MAX_LENGTH}文字以内で入力してください。`
+				}
+			},
+			413
+		);
+	}
+
 	const { submission, fieldErrors } = await readSubmission(request);
 
 	if (!submission) {
