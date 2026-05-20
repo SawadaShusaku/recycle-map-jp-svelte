@@ -34,10 +34,16 @@
 - [Lucide Svelte](https://lucide.dev/) - アイコン
 - [Tailwind CSS](https://tailwindcss.com/) v4
 - [Cloudflare Workers](https://workers.cloudflare.com/) / [D1](https://developers.cloudflare.com/d1/)
+- [Wrangler](https://developers.cloudflare.com/workers/wrangler/) - Cloudflare Workers / D1 の開発・デプロイ
 - [OpenFreeMap](https://openfreemap.org/) - 地図タイル
 - [OpenRouteService](https://openrouteservice.org/) - 経路検索
 - [Mapillary](https://www.mapillary.com/) - ストリートビュー画像
+- [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) - お問い合わせフォームのbot対策
+- [Resend](https://resend.com/) - お問い合わせメール送信
 - [Google Analytics](https://analytics.google.com/) - アクセス解析
+- [ESLint](https://eslint.org/) / [typescript-eslint](https://typescript-eslint.io/) / [eslint-plugin-svelte](https://sveltejs.github.io/eslint-plugin-svelte/) - 静的解析
+- [Vitest](https://vitest.dev/) - ユニットテスト
+- [Playwright](https://playwright.dev/) - E2Eテスト
 
 ## データソース
 
