@@ -229,33 +229,112 @@
     CLUSTER_TEXT_SIZE_PX.municipality
   ];
 
+  type SheetDragState = 'idle' | 'pending' | 'dragging' | 'ignored';
+
   let sheetHeightVh = $state(SHEET_DEFAULT_VH);
+  let dragStartX = 0;
   let dragStartY = 0;
   let dragStartHeightVh = 0;
+  let dragPointerId: number | null = null;
+  let dragScrollable: HTMLElement | null = null;
+  let sheetDragState: SheetDragState = 'idle';
   let isDragging = $state(false);
+
+  const sheetDragIgnoreSelector = [
+    'a',
+    'button',
+    'input',
+    'select',
+    'textarea',
+    'summary',
+    'label',
+    '[contenteditable="true"]',
+    '[role="button"]',
+    '[role="tab"]'
+  ].join(',');
+
+  function isSheetDragIgnoredTarget(target: EventTarget | null) {
+    if (!(target instanceof Element)) return false;
+    if (target.closest('.bottom-sheet__handle')) return false;
+    return Boolean(target.closest(sheetDragIgnoreSelector));
+  }
+
+  function findScrollableAncestor(target: EventTarget | null): HTMLElement | null {
+    let element = target instanceof HTMLElement ? target : null;
+    while (element && !element.classList.contains('bottom-sheet')) {
+      const { overflowY } = window.getComputedStyle(element);
+      if ((overflowY === 'auto' || overflowY === 'scroll') && element.scrollHeight > element.clientHeight) {
+        return element;
+      }
+      element = element.parentElement;
+    }
+    return null;
+  }
+
+  function canScrollWithGesture(scrollable: HTMLElement | null, dy: number) {
+    if (!scrollable) return false;
+    if (dy > 0) return scrollable.scrollTop > 0;
+    if (dy < 0) return scrollable.scrollTop + scrollable.clientHeight < scrollable.scrollHeight - 1;
+    return false;
+  }
+
+  function resetSheetDrag() {
+    dragPointerId = null;
+    dragScrollable = null;
+    sheetDragState = 'idle';
+    isDragging = false;
+  }
 
   function handleSheetPointerDown(e: PointerEvent) {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (isSheetDragIgnoredTarget(e.target)) {
+      sheetDragState = 'ignored';
+      return;
+    }
+    dragStartX = e.clientX;
     dragStartY = e.clientY;
     dragStartHeightVh = sheetHeightVh;
-    isDragging = true;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    dragPointerId = e.pointerId;
+    dragScrollable = findScrollableAncestor(e.target);
+    sheetDragState = 'pending';
   }
 
   function handleSheetPointerMove(e: PointerEvent) {
-    if (!isDragging) return;
+    if (dragPointerId !== e.pointerId || sheetDragState === 'idle' || sheetDragState === 'ignored') return;
+    const dx = e.clientX - dragStartX;
     const dy = e.clientY - dragStartY;
+
+    if (sheetDragState === 'pending') {
+      const absX = Math.abs(dx);
+      const absY = Math.abs(dy);
+      if (Math.max(absX, absY) < 6) return;
+      if (absX > absY || canScrollWithGesture(dragScrollable, dy)) {
+        sheetDragState = 'ignored';
+        return;
+      }
+
+      sheetDragState = 'dragging';
+      isDragging = true;
+      heroSwipeActive = false;
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    }
+
+    e.preventDefault();
     const vhPerPx = 100 / window.innerHeight;
     const next = dragStartHeightVh - dy * vhPerPx;
     sheetHeightVh = Math.max(SHEET_MIN_VH - 6, Math.min(SHEET_MAX_VH, next));
   }
 
   function handleSheetPointerUp(e: PointerEvent) {
-    if (!isDragging) return;
-    isDragging = false;
-    try {
-      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch {}
+    if (dragPointerId !== e.pointerId) return;
+    const didDrag = sheetDragState === 'dragging';
+    if (didDrag) {
+      try {
+        (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+      } catch {}
+    }
+    resetSheetDrag();
+    if (!didDrag) return;
     if (sheetHeightVh < SHEET_CLOSE_THRESHOLD_VH) {
       selectedFacilityId = null;
       sheetHeightVh = SHEET_DEFAULT_VH;
@@ -816,17 +895,19 @@
   </div>
 {/snippet}
 
-{#snippet popupCard(f: GeoFeature)}
+{#snippet popupCard(f: GeoFeature, showInlineClose: boolean)}
   {@const { city, name, address, categories, hours, notes, collectionEntries = [] } = f.properties}
   <div class="popup-scroll flex flex-col">
     <div class="px-5 pt-5">
       <div class="mb-2 flex items-start justify-between gap-3">
         <h3 class="pr-2 text-xl font-bold leading-snug text-gray-900">{name}</h3>
-        <button
-          onclick={() => (selectedFacilityId = null)}
-          class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-black/5 text-xl text-gray-500 transition-colors hover:bg-black/10 hover:text-gray-800"
-          aria-label="閉じる"
-        >✕</button>
+        {#if showInlineClose}
+          <button
+            onclick={() => (selectedFacilityId = null)}
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-black/5 text-xl text-gray-500 transition-colors hover:bg-black/10 hover:text-gray-800"
+            aria-label="閉じる"
+          >✕</button>
+        {/if}
       </div>
 
       <div class="flex flex-wrap gap-2">
@@ -1270,7 +1351,7 @@
 	        <ChevronRight size={18} strokeWidth={2.4} />
 	      </button>
 	      {@render heroBlock(selectedFacility)}
-	      {@render popupCard(selectedFacility)}
+	      {@render popupCard(selectedFacility, false)}
 	    </aside>
 	  {/if}
 
@@ -1278,25 +1359,26 @@
         <div class="bottom-sheet-backdrop" onclick={() => (selectedFacilityId = null)} role="presentation"></div>
 	      <div
 	        class="bottom-sheet"
+          role="dialog"
+          aria-label="施設詳細"
+          tabindex="-1"
           class:bottom-sheet--dragging={isDragging}
 	        transition:fly={{ y: 600, duration: 360, opacity: 1 }}
           style="height: {sheetHeightVh}vh"
-        >
-        <div
-          class="bottom-sheet__handle"
-          role="button"
-          tabindex="-1"
-          aria-label="ドラッグで高さ調整"
           onpointerdown={handleSheetPointerDown}
           onpointermove={handleSheetPointerMove}
           onpointerup={handleSheetPointerUp}
           onpointercancel={handleSheetPointerUp}
+        >
+        <div
+          class="bottom-sheet__handle"
+          aria-hidden="true"
 	        >
 	          <div class="bottom-sheet__handle-bar"></div>
 	        </div>
 	        <div class="bottom-sheet__body">
 	          {@render heroBlock(selectedFacility)}
-	          {@render popupCard(selectedFacility)}
+	          {@render popupCard(selectedFacility, false)}
 	        </div>
 	      </div>
 	  {/if}
