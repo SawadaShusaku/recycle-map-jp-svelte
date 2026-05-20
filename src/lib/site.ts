@@ -14,5 +14,5 @@ export const SITE_URL = (() => {
     return window.location.origin;
   }
 
-  return 'https://recycle-map.jp';
+  return 'https://tokyo-recycle-map.com';
 })();

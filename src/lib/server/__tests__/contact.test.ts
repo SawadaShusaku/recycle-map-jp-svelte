@@ -176,8 +176,9 @@ describe('handleContactSubmission', () => {
 			from: baseEnv.CONTACT_FROM_EMAIL,
 			to: [baseEnv.CONTACT_TO_EMAIL],
 			reply_to: 'user@example.com',
-			subject: 'お問い合わせ: 山田太郎'
+			subject: '[全国リサイクルマップ] お問い合わせ: 山田太郎'
 		});
+		expect(resendBody.text).toContain('■ お問い合わせ内容');
 		expect(resendBody.text).toContain('掲載情報の修正について確認したいです。');
 		expect(resendBody.text).not.toContain('turnstile-token');
 	});
