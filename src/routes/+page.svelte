@@ -244,6 +244,11 @@
   let dragScrollable: HTMLElement | null = null;
   let sheetDragState: SheetDragState = 'idle';
   let isDragging = $state(false);
+  let bottomSheetElement = $state<HTMLElement | null>(null);
+  let touchGuardStartX = 0;
+  let touchGuardStartY = 0;
+  let touchGuardScrollable: HTMLElement | null = null;
+  let touchGuardIgnored = false;
 
   const sheetDragIgnoreSelector = [
     'a',
@@ -258,10 +263,22 @@
     '[role="tab"]'
   ].join(',');
 
+  const sheetTouchBrowserIgnoreSelector = [
+    'input',
+    'select',
+    'textarea',
+    '[contenteditable="true"]'
+  ].join(',');
+
   function isSheetDragIgnoredTarget(target: EventTarget | null) {
     if (!(target instanceof Element)) return false;
     if (target.closest('.bottom-sheet__handle')) return false;
     return Boolean(target.closest(sheetDragIgnoreSelector));
+  }
+
+  function isSheetTouchBrowserIgnoredTarget(target: EventTarget | null) {
+    if (!(target instanceof Element)) return false;
+    return Boolean(target.closest(sheetTouchBrowserIgnoreSelector));
   }
 
   function findScrollableAncestor(target: EventTarget | null): HTMLElement | null {
@@ -281,6 +298,11 @@
     if (dy > 0) return scrollable.scrollTop > 0;
     if (dy < 0) return scrollable.scrollTop + scrollable.clientHeight < scrollable.scrollHeight - 1;
     return false;
+  }
+
+  function shouldSheetHandleVerticalGesture(scrollable: HTMLElement | null, dy: number) {
+    if (dy < 0 && sheetHeightVh < SHEET_MAX_VH - 1) return true;
+    return !canScrollWithGesture(scrollable, dy);
   }
 
   function lockBodyScrollForMobileSheet() {
@@ -354,12 +376,41 @@
       }
     };
   }
-
   function resetSheetDrag() {
     dragPointerId = null;
     dragScrollable = null;
     sheetDragState = 'idle';
     isDragging = false;
+  }
+
+  function handleSheetTouchStart(e: TouchEvent) {
+    const touch = e.touches[0];
+    if (!touch) return;
+    touchGuardStartX = touch.clientX;
+    touchGuardStartY = touch.clientY;
+    touchGuardScrollable = findScrollableAncestor(e.target);
+    touchGuardIgnored = isSheetTouchBrowserIgnoredTarget(e.target);
+  }
+
+  function handleSheetTouchMove(e: TouchEvent) {
+    if (touchGuardIgnored) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+    const dx = touch.clientX - touchGuardStartX;
+    const dy = touch.clientY - touchGuardStartY;
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+    if (Math.max(absX, absY) < 6 || absX > absY) return;
+    if (shouldSheetHandleVerticalGesture(touchGuardScrollable, dy)) {
+      e.preventDefault();
+    } else {
+      touchGuardStartY = touch.clientY;
+    }
+  }
+
+  function resetSheetTouchGuard() {
+    touchGuardScrollable = null;
+    touchGuardIgnored = false;
   }
 
   function handleSheetPointerDown(e: PointerEvent) {
@@ -385,8 +436,14 @@
       const absX = Math.abs(dx);
       const absY = Math.abs(dy);
       if (Math.max(absX, absY) < 6) return;
-      if (absX > absY || canScrollWithGesture(dragScrollable, dy)) {
+      if (absX > absY) {
         sheetDragState = 'ignored';
+        return;
+      }
+      if (!shouldSheetHandleVerticalGesture(dragScrollable, dy)) {
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        dragStartHeightVh = sheetHeightVh;
         return;
       }
 
@@ -435,6 +492,23 @@
     const currentMap = map;
     if (!browser || !isMobile || !selectedFacility || !currentMap) return;
     return suspendMapInteractionsForModal(currentMap);
+  });
+
+  $effect(() => {
+    const sheet = bottomSheetElement;
+    if (!browser || !isMobile || !selectedFacility || !sheet) return;
+
+    sheet.addEventListener('touchstart', handleSheetTouchStart);
+    sheet.addEventListener('touchmove', handleSheetTouchMove, { passive: false });
+    sheet.addEventListener('touchend', resetSheetTouchGuard);
+    sheet.addEventListener('touchcancel', resetSheetTouchGuard);
+
+    return () => {
+      sheet.removeEventListener('touchstart', handleSheetTouchStart);
+      sheet.removeEventListener('touchmove', handleSheetTouchMove);
+      sheet.removeEventListener('touchend', resetSheetTouchGuard);
+      sheet.removeEventListener('touchcancel', resetSheetTouchGuard);
+    };
   });
 
   $effect(() => {
@@ -1447,6 +1521,7 @@
         <div class="bottom-sheet-backdrop" onclick={() => (selectedFacilityId = null)} role="presentation"></div>
 	      <div
 	        class="bottom-sheet"
+          bind:this={bottomSheetElement}
           role="dialog"
           aria-modal="true"
           aria-label="施設詳細"
