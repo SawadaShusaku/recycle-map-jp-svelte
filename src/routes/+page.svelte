@@ -230,6 +230,11 @@
   ];
 
   type SheetDragState = 'idle' | 'pending' | 'dragging' | 'ignored';
+  type MapModalInteraction = {
+    isEnabled: () => boolean;
+    enable: () => void;
+    disable: () => void;
+  };
 
   let sheetHeightVh = $state(SHEET_DEFAULT_VH);
   let dragStartX = 0;
@@ -276,6 +281,78 @@
     if (dy > 0) return scrollable.scrollTop > 0;
     if (dy < 0) return scrollable.scrollTop + scrollable.clientHeight < scrollable.scrollHeight - 1;
     return false;
+  }
+
+  function lockBodyScrollForMobileSheet() {
+    const { body } = document;
+    const scrollY = window.scrollY;
+    const previous = {
+      position: body.style.position,
+      top: body.style.top,
+      left: body.style.left,
+      right: body.style.right,
+      width: body.style.width,
+      overflow: body.style.overflow
+    };
+    const preventBackgroundTouchMove = (event: TouchEvent) => {
+      if (!(event.target instanceof Element) || !event.target.closest('.bottom-sheet')) {
+        event.preventDefault();
+      }
+    };
+
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.width = '100%';
+    body.style.overflow = 'hidden';
+    document.addEventListener('touchmove', preventBackgroundTouchMove, { passive: false });
+
+    return () => {
+      document.removeEventListener('touchmove', preventBackgroundTouchMove);
+      body.style.position = previous.position;
+      body.style.top = previous.top;
+      body.style.left = previous.left;
+      body.style.right = previous.right;
+      body.style.width = previous.width;
+      body.style.overflow = previous.overflow;
+      window.scrollTo(0, scrollY);
+    };
+  }
+
+  function getMapModalInteractions(currentMap: maplibregl.Map): MapModalInteraction[] {
+    const interactions: unknown[] = [
+      currentMap.boxZoom,
+      currentMap.doubleClickZoom,
+      currentMap.dragPan,
+      currentMap.dragRotate,
+      currentMap.keyboard,
+      currentMap.scrollZoom,
+      currentMap.touchZoomRotate
+    ];
+
+    return interactions.filter((interaction): interaction is MapModalInteraction => {
+      if (!interaction || typeof interaction !== 'object') return false;
+      const candidate = interaction as Partial<MapModalInteraction>;
+      return (
+        typeof candidate.isEnabled === 'function' &&
+        typeof candidate.enable === 'function' &&
+        typeof candidate.disable === 'function'
+      );
+    });
+  }
+
+  function suspendMapInteractionsForModal(currentMap: maplibregl.Map) {
+    const enabledInteractions = getMapModalInteractions(currentMap).filter((interaction) => interaction.isEnabled());
+    for (const interaction of enabledInteractions) {
+      interaction.disable();
+    }
+
+    return () => {
+      for (const interaction of enabledInteractions) {
+        interaction.enable();
+      }
+    };
   }
 
   function resetSheetDrag() {
@@ -347,6 +424,17 @@
     if (selectedFacilityId === null) {
       sheetHeightVh = SHEET_DEFAULT_VH;
     }
+  });
+
+  $effect(() => {
+    if (!browser || !isMobile || !selectedFacility) return;
+    return lockBodyScrollForMobileSheet();
+  });
+
+  $effect(() => {
+    const currentMap = map;
+    if (!browser || !isMobile || !selectedFacility || !currentMap) return;
+    return suspendMapInteractionsForModal(currentMap);
   });
 
   $effect(() => {
@@ -1360,6 +1448,7 @@
 	      <div
 	        class="bottom-sheet"
           role="dialog"
+          aria-modal="true"
           aria-label="施設詳細"
           tabindex="-1"
           class:bottom-sheet--dragging={isDragging}
@@ -1714,6 +1803,8 @@
     background: rgba(15, 23, 42, 0.18);
     z-index: 49;
     animation: bottom-sheet-fade 0.2s ease;
+    overscroll-behavior: none;
+    touch-action: none;
   }
   @keyframes bottom-sheet-fade {
     from { opacity: 0; }
@@ -1733,6 +1824,8 @@
     flex-direction: column;
     transition: height 0.18s ease;
     max-width: 100vw;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
   }
   .bottom-sheet--dragging {
     transition: none;
@@ -1766,9 +1859,14 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    overscroll-behavior: contain;
   }
   .bottom-sheet :global(.detail-panel__hero) {
     flex-shrink: 0;
+  }
+  .bottom-sheet :global(.popup-scroll [class~="overflow-y-auto"]) {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
   /* When refined-popup renders inside bottom-sheet, drop the popup's own card chrome */
   .bottom-sheet :global(.refined-popup) {
