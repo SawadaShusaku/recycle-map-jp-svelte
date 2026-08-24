@@ -30,16 +30,78 @@ The popup SHALL display as a bottom sheet on viewports narrower than 640px, and 
 - **AND** the map does NOT pan automatically
 
 ### Requirement: Bottom sheet swipe to close
-The bottom sheet SHALL close when the user swipes downward on the sheet header area, or taps the close button.
+The bottom sheet SHALL close when the user swipes downward on the sheet surface past the close threshold. The mobile bottom sheet SHALL NOT show an in-sheet close button.
 
-#### Scenario: User swipes down on bottom sheet
-- **WHEN** user touches the bottom sheet header and swipes downward more than 30 pixels within 500ms
+#### Scenario: User swipes down on bottom sheet handle
+- **WHEN** user touches the bottom sheet handle and swipes downward past the close threshold
 - **THEN** the bottom sheet slides down and closes
-- **AND** `openPopupId` is set to null
+- **AND** the selected facility state is cleared
 
-#### Scenario: User taps close button on bottom sheet
-- **WHEN** user taps the close button inside the bottom sheet
-- **THEN** the bottom sheet closes immediately
+#### Scenario: User swipes down on bottom sheet content
+- **WHEN** user touches a non-interactive area of the bottom sheet content and swipes downward past the close threshold
+- **THEN** the bottom sheet slides down and closes
+- **AND** the selected facility state is cleared
+
+#### Scenario: User views bottom sheet controls
+- **WHEN** the mobile bottom sheet is open
+- **THEN** no close button is displayed inside the bottom sheet
+- **AND** the sheet can still be dismissed by dragging downward or tapping the backdrop
+
+### Requirement: Bottom sheet vertical drag coverage
+The bottom sheet SHALL allow vertical drag resizing from the handle, media hero, and content areas where the gesture does not conflict with a more specific interaction.
+
+#### Scenario: User drags up on bottom sheet content
+- **WHEN** user starts a vertical drag from a non-interactive area of the bottom sheet content
+- **THEN** the bottom sheet height increases up to its maximum height
+- **AND** buttons, links, tabs, and route controls are not activated by the drag
+
+#### Scenario: User drags vertically on the image section
+- **WHEN** user starts a vertically dominant drag on the image section
+- **THEN** the bottom sheet moves vertically instead of changing images
+
+#### Scenario: User swipes horizontally on the image section
+- **WHEN** user starts a horizontally dominant swipe on the image section with multiple images available
+- **THEN** the image carousel changes to the previous or next image
+- **AND** the bottom sheet height does not change because of that horizontal swipe
+
+### Requirement: Mobile bottom sheet map-style gesture arbitration
+On viewports narrower than 640px, the facility bottom sheet SHALL arbitrate vertical gestures across the sheet surface like a map application bottom sheet: scroll sheet content when possible, move the sheet when content cannot scroll further, and prevent the browser page from taking over the gesture.
+
+#### Scenario: Downward swipe at top of sheet content
+- **WHEN** a facility bottom sheet is open on a viewport with width < 640px
+- **AND** the user swipes downward inside the sheet while the relevant sheet content is already scrolled to its top
+- **THEN** the browser pull-to-refresh UI does not appear
+- **AND** the page behind the sheet does not move
+- **AND** the gesture is handled by the sheet
+
+#### Scenario: Scrollable content can still move
+- **WHEN** a facility bottom sheet is open on a viewport with width < 640px
+- **AND** the user swipes vertically inside scrollable sheet content that can still scroll in that direction
+- **THEN** the content scrolls normally
+- **AND** the browser page does not refresh or scroll behind the sheet
+
+#### Scenario: Non-scrollable sheet surface
+- **WHEN** a facility bottom sheet is open on a viewport with width < 640px
+- **AND** the user swipes vertically from a non-scrollable region of the sheet such as the media/header area or body whitespace
+- **THEN** the gesture is handled by the sheet rather than the browser page
+
+#### Scenario: Controls remain tappable
+- **WHEN** a facility bottom sheet is open on a viewport with width < 640px
+- **THEN** buttons, links, tabs, media controls, and route controls inside the sheet remain tappable
+- **AND** tapping the backdrop still closes the sheet
+
+### Requirement: Mobile bottom sheet modal background lock
+On viewports narrower than 640px, the facility bottom sheet SHALL behave as a modal detail surface while open, preventing interaction with the background map and page until the sheet is closed.
+
+#### Scenario: Bottom sheet blocks background gestures
+- **WHEN** a facility bottom sheet is open on a viewport with width < 640px
+- **THEN** dragging, scrolling, pinching, or tapping outside the sheet does not pan, zoom, or otherwise operate the map
+- **AND** the page behind the sheet does not scroll or rubber-band
+
+#### Scenario: Bottom sheet exposes modal semantics
+- **WHEN** a facility bottom sheet is open on a viewport with width < 640px
+- **THEN** the sheet is exposed as a dialog with modal semantics
+- **AND** the backdrop can be tapped to close the sheet
 
 ### Requirement: Bottom sheet content parity
 The bottom sheet SHALL contain the same content structure as the desktop popup: facility name, category color bar, category chips, basic/details tabs, address/hours/notes, category details, travel mode selector, and routing button.
@@ -75,12 +137,17 @@ The popup SHALL contain a "経路を検索" button that spans enough width to be
 - **AND** clicking it initiates route calculation with the selected travel mode
 
 ### Requirement: Close button size
-The popup SHALL provide a close button with a minimum tap target of 32 x 32 pixels.
+Desktop popup close controls SHALL provide a minimum tap target of 32 x 32 pixels. The mobile bottom sheet SHALL omit an in-sheet close button.
 
-#### Scenario: User closes popup
-- **WHEN** the popup is open
+#### Scenario: User closes desktop popup
+- **WHEN** the desktop popup is open
 - **THEN** the close button is at least 32 x 32 px
 - **AND** clicking it closes the popup
+
+#### Scenario: User opens mobile bottom sheet
+- **WHEN** the mobile bottom sheet is open
+- **THEN** no in-sheet close button is present
+- **AND** the bottom sheet remains dismissible through supported mobile dismissal gestures
 
 ### Requirement: Reduced padding for content space
 The popup SHALL use compact padding to maximize usable content area within its fixed width.
@@ -91,7 +158,7 @@ The popup SHALL use compact padding to maximize usable content area within its f
 - **AND** content does not touch the card edges
 
 ### Requirement: Popup transitions are animated
-The popup SHALL animate between closed and open states so facility details appear smoothly without obscuring the selected marker or shifting unrelated map controls. On mobile viewports, the bottom sheet SHALL slide from the bottom edge; on desktop viewports, the marker-attached popup SHALL use a subtle enter and exit transition.
+The popup SHALL animate between closed and open states so facility details appear smoothly without obscuring the selected marker or shifting unrelated map controls. On mobile viewports, the bottom sheet SHALL slide from the bottom edge and then remain the active map-style modal detail surface; on desktop viewports, the marker-attached popup SHALL use a subtle enter and exit transition.
 
 #### Scenario: Desktop popup opens
 - **WHEN** the user opens a facility popup on a viewport with width >= 640px
@@ -101,7 +168,7 @@ The popup SHALL animate between closed and open states so facility details appea
 #### Scenario: Mobile bottom sheet opens
 - **WHEN** the user opens a facility popup on a viewport with width < 640px
 - **THEN** the bottom sheet slides up from the bottom of the viewport
-- **AND** the map remains usable after the transition completes
+- **AND** the map remains visible but background map interaction is disabled until the sheet closes
 
 #### Scenario: Popup closes
 - **WHEN** the user closes a desktop popup or mobile bottom sheet
@@ -118,14 +185,13 @@ Popup and bottom sheet animations SHALL honor the user's reduced motion preferen
 - **AND** all popup content remains available
 
 ### Requirement: Popup facility media
-The popup and mobile bottom sheet SHALL display approved facility media when media is available for the selected facility.
+The popup and mobile bottom sheet SHALL display approved facility media when media is available for the selected facility. The media container height SHALL be visually compact.
 
 #### Scenario: Popup opens with media
 - **WHEN** the user opens a facility popup for a facility with approved media
-- **THEN** the popup or detail panel displays the media without hiding the facility name, address, categories, or route controls
+- **THEN** the popup or detail panel displays the media in a reduced height container without hiding the facility name, address, categories, or route controls
 - **AND** attribution or a provider link is available when required
 
 #### Scenario: Popup opens without media
 - **WHEN** the user opens a facility popup for a facility without approved media
 - **THEN** the popup displays the normal facility information layout without a broken media placeholder
-

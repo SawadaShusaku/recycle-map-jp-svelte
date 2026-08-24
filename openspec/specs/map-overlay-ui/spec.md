@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Map Overlay UI
+
+## Purpose
+
+Define the map-level overlay layout and gesture behavior for controls, custom popups, and mobile bottom sheets.
+
+## Requirements
 
 ### Requirement: Full-screen map layout
 The map SHALL occupy the entire viewport (100vw, 100vh) without being constrained by a side panel.
@@ -21,3 +27,15 @@ The map overlay CSS SHALL preserve transparent background and zero padding on Ma
 - **WHEN** a MapLibre popup opens
 - **THEN** the `.maplibregl-popup-content` element has no default padding or opaque background
 - **AND** the custom card styling inside the popup is visible without interference from default MapLibre styles
+
+### Requirement: Expanded bottom sheet hit area
+The mobile bottom sheet SHALL capture upward and downward swipe gestures across its surface area, except where explicitly prevented by interactive child elements or internal scrollable areas, similar to standard mobile map applications.
+
+#### Scenario: Swipe on body of bottom sheet
+- **WHEN** the user swipes up or down on the main body of the bottom sheet
+- **THEN** the sheet responds to the swipe gesture by expanding or collapsing when the gesture is not claimed by internal content scrolling
+
+#### Scenario: Swipe on interactive button
+- **WHEN** the user taps or swipes starting from a button inside the bottom sheet
+- **THEN** taps remain available to the button
+- **AND** vertical gestures do not trigger browser pull-to-refresh or background map movement
